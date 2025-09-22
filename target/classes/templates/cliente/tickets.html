@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Mis Tickets</title></head>
+<body>
+<h2>Crear ticket</h2>
+<form method="post" th:action="@{/cliente/tickets}">
+  <input name="categoria" placeholder="Categoría" required>
+  <br><textarea name="descripcion" placeholder="Describe el problema" required></textarea>
+  <br><button type="submit">Enviar</button>
+</form>
+
+<h2>Mis tickets</h2>
+<table>
+  <thead><tr><th>ID</th><th>Categoría</th><th>Estado</th><th>Asignado a</th></tr></thead>
+  <tbody>
+  <tr th:each="t : ${tickets}">
+    <td th:text="${t.id}"></td>
+    <td th:text="${t.categoria}"></td>
+    <td th:text="${t.estado}"></td>
+    <td th:text="${t.asignadoA != null ? t.asignadoA.nombreCompleto : '—'}"></td>
+  </tr>
+  </tbody>
+</table>
+</body>
+</html>

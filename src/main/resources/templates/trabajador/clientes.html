@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscar Clientes - Banco U Latina</title>
+  <link rel="stylesheet" href="/css/estilos.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <h1>👥 Gestión de Clientes</h1>
+      <p>Búsqueda y administración de clientes</p>
+    </div>
+  </header>
+
+  <nav>
+    <div class="container">
+      <a href="/trabajador/inicio">🏠 Inicio</a>
+      <a href="/trabajador/clientes" class="active">👥 Clientes</a>
+      <a href="/trabajador/tickets">🎫 Tickets</a>
+      <a href="/trabajador/solicitudes">📄 Solicitudes</a>
+      <a href="/trabajador/prestamos">💰 Préstamos</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Filtros de Búsqueda -->
+    <div class="filters">
+      <form method="get" th:action="@{/trabajador/clientes}" class="flex gap-2 align-end flex-wrap">
+        <div class="form-group">
+          <label for="nombre">👤 Nombre</label>
+          <input type="text"
+                 id="nombre"
+                 name="nombre"
+                 placeholder="Buscar por nombre"
+                 th:value="${param.nombre}"
+                 class="table-filter"
+                 data-column="0">
+        </div>
+
+        <div class="form-group">
+          <label for="correo">📧 Correo</label>
+          <input type="email"
+                 id="correo"
+                 name="correo"
+                 placeholder="Buscar por correo"
+                 th:value="${param.correo}"
+                 class="table-filter"
+                 data-column="1">
+        </div>
+
+        <div class="form-group">
+          <label for="cedula">🆔 Cédula</label>
+          <input type="text"
+                 id="cedula"
+                 name="cedula"
+                 placeholder="Buscar por cédula"
+                 th:value="${param.cedula}"
+                 class="table-filter"
+                 data-column="2">
+        </div>
+
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">
+            🔍 Buscar
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="clearFilters()">
+            🗑️ Limpiar
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="card mb-2">
+      <div class="flex justify-between align-center">
+        <div>
+          <h3>📊 Resultados de Búsqueda</h3>
+          <p>Se encontraron <span th:text="${#lists.size(resultados) ?: 0}">0</span> clientes</p>
+        </div>
+        <div class="flex gap-1">
+          <button class="btn btn-success" onclick="exportToExcel()" data-tooltip="Exportar a Excel">
+            📊 Exportar
+          </button>
+          <button class="btn btn-secondary" id="toggle-filters" onclick="toggleAdvancedFilters()">
+            ⚙️ Filtros Avanzados
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros Avanzados (Ocultos por defecto) -->
+    <div id="advanced-filters" class="card hidden">
+      <h4>🔧 Filtros Avanzados</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div>
+          <label>📅 Registrado desde:</label>
+          <input type="date" name="fechaDesde" class="table-filter">
+        </div>
+        <div>
+          <label>📅 Registrado hasta:</label>
+          <input type="date" name="fechaHasta" class="table-filter">
+        </div>
+        <div>
+          <label>💰 Con préstamos:</label>
+          <select name="conPrestamos" class="table-filter">
+            <option value="">Todos</option>
+            <option value="si">Sí</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+        <div>
+          <label>🎫 Con tickets abiertos:</label>
+          <select name="conTickets" class="table-filter">
+            <option value="">Todos</option>
+            <option value="si">Sí</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de Resultados -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th data-tooltip="Haga clic para ordenar">👤 Nombre</th>
+            <th data-tooltip="Haga clic para ordenar">📧 Correo</th>
+            <th data-tooltip="Haga clic para ordenar">🆔 Cédula</th>
+            <th data-tooltip="Haga clic para ordenar">📅 Registro</th>
+            <th data-tooltip="Haga clic para ordenar">💰 Cuentas</th>
+            <th class="no-sort">🔧 Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="c : ${resultados}" class="fade-in">
+            <td>
+              <div class="flex align-center gap-1">
+                <div style="width: 40px; height: 40px; background: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                  <span th:text="${#strings.substring(c.nombreCompleto, 0, 1)}">A</span>
+                </div>
+                <div>
+                  <div th:text="${c.nombreCompleto}" style="font-weight: 600;"></div>
+                  <div style="font-size: 0.875rem; color: var(--text-secondary);">Cliente</div>
+                </div>
+              </div>
+            </td>
+            <td th:text="${c.correo}"></td>
+            <td>
+              <span th:text="${c.cedula}" class="status status-active"></span>
+            </td>
+            <td th:text="${#temporals.format(c.fechaRegistro, 'dd/MM/yyyy')}" style="font-size: 0.875rem;"></td>
+            <td>
+              <div class="flex align-center gap-1">
+                <span style="background: var(--success-color); color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">
+                  💳 2 cuentas
+                </span>
+              </div>
+            </td>
+            <td>
+              <div class="flex gap-1">
+                <a th:href="@{'/trabajador/cliente/' + ${c.id}}"
+                   class="btn btn-primary btn-sm"
+                   data-tooltip="Ver detalles completos">
+                  👁️ Ver
+                </a>
+                <button class="btn btn-secondary btn-sm"
+                        th:onclick="'sendMessage(' + ${c.id} + ')'"
+                        data-tooltip="Enviar mensaje">
+                  💬
+                </button>
+                <button class="btn btn-warning btn-sm"
+                        th:onclick="'createTicket(' + ${c.id} + ')'"
+                        data-tooltip="Crear ticket">
+                  🎫
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Mensaje cuando no hay resultados -->
+          <tr th:if="${#lists.isEmpty(resultados)}">
+            <td colspan="6" class="text-center" style="padding: 3rem;">
+              <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+              <h3>No se encontraron clientes</h3>
+              <p>Intente ajustar los criterios de búsqueda</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación (si es necesaria) -->
+    <div th:if="${totalPages > 1}" class="flex justify-center mt-2">
+      <div class="flex gap-1">
+        <button class="btn btn-secondary" th:disabled="${currentPage == 0}">
+          ← Anterior
+        </button>
+        <span class="btn" style="background: var(--light-bg);">
+          Página <span th:text="${currentPage + 1}">1</span> de <span th:text="${totalPages}">1</span>
+        </span>
+        <button class="btn btn-secondary" th:disabled="${currentPage + 1 >= totalPages}">
+          Siguiente →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    function clearFilters() {
+      document.querySelectorAll('input[type="text"], input[type="email"], input[type="date"], select').forEach(input => {
+        input.value = '';
+      });
+      window.location.href = '/trabajador/clientes';
+    }
+
+    function toggleAdvancedFilters() {
+      const filters = document.getElementById('advanced-filters');
+      const button = document.getElementById('toggle-filters');
+
+      filters.classList.toggle('hidden');
+      button.textContent = filters.classList.contains('hidden')
+        ? '⚙️ Filtros Avanzados'
+        : '🗑️ Ocultar Filtros';
+    }
+
+    function exportToExcel() {
+      BancoApp.showNotification('Exportando datos...', 'info');
+      // Aquí iría la lógica de exportación
+      setTimeout(() => {
+        BancoApp.showNotification('Datos exportados correctamente', 'success');
+      }, 2000);
+    }
+
+    function sendMessage(clienteId) {
+      const message = prompt('Ingrese el mensaje para el cliente:');
+      if (message) {
+        BancoApp.showNotification('Mensaje enviado correctamente', 'success');
+      }
+    }
+
+    function createTicket(clienteId) {
+      if (confirm('¿Desea crear un nuevo ticket para este cliente?')) {
+        window.location.href = `/trabajador/tickets/nuevo?clienteId=${clienteId}`;
+      }
+    }
+
+    // Auto-búsqueda mientras escribe
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInputs = document.querySelectorAll('.table-filter');
+      let searchTimeout;
+
+      searchInputs.forEach(input => {
+        input.addEventListener('input', () => {
+          clearTimeout(searchTimeout);
+          searchTimeout = setTimeout(() => {
+            // Filtrar tabla en tiempo real
+            new TableFilters('table').filterTable();
+          }, 300);
+        });
+      });
+    });
+  </script>
+
+  <style>
+    .btn-sm {
+      padding: 0.375rem 0.75rem;
+      font-size: 0.875rem;
+    }
+
+    .active {
+      background: var(--primary-hover) !important;
+    }
+
+    nav a.active {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+  </style>
+</body>
+</html>

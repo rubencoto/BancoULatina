@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Solicitudes</title></head>
+<body>
+<h2>Solicitudes de productos</h2>
+<table>
+  <thead><tr><th>ID</th><th>Cliente</th><th>Tipo</th><th>Monto</th><th>Plazo</th><th>Tasa</th><th>Estado</th><th>Acción</th></tr></thead>
+  <tbody>
+  <tr th:each="s : ${solicitudes}">
+    <td th:text="${s.id}"></td>
+    <td th:text="${s.cliente.nombreCompleto}"></td>
+    <td th:text="${s.tipo}"></td>
+    <td th:text="${s.monto}">-</td>
+    <td th:text="${s.plazoMeses}">-</td>
+    <td th:text="${s.tasaAnual}">-</td>
+    <td th:text="${s.estado}"></td>
+    <td>
+      <form th:action="@{'/trabajador/solicitudes/' + ${s.id} + '/estado'}" method="post" style="display:inline">
+        <input type="hidden" name="estado" value="APROBADA"><button>Aprobar</button>
+      </form>
+      <form th:action="@{'/trabajador/solicitudes/' + ${s.id} + '/estado'}" method="post" style="display:inline">
+        <input type="hidden" name="estado" value="RECHAZADA"><button>Rechazar</button>
+      </form>
+    </td>
+  </tr>
+  </tbody>
+</table>
+</body>
+</html>
+

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Tickets</title></head>
+<body>
+<h2>Tickets</h2>
+<form method="get" th:action="@{/trabajador/tickets}">
+  <select name="estado">
+    <option th:selected="${estado==null}" value="">Todos</option>
+    <option>ABIERTO</option>
+    <option>EN_PROCESO</option>
+    <option>RESUELTO</option>
+    <option>RECHAZADO</option>
+  </select>
+  <button type="submit">Filtrar</button>
+</form>
+
+<table>
+  <thead><tr><th>ID</th><th>Cliente</th><th>Categoría</th><th>Estado</th><th>Asignado</th><th>Acción</th></tr></thead>
+  <tbody>
+  <tr th:each="t : ${tickets}">
+    <td th:text="${t.id}"></td>
+    <td th:text="${t.cliente.nombreCompleto}"></td>
+    <td th:text="${t.categoria}"></td>
+    <td th:text="${t.estado}"></td>
+    <td th:text="${t.asignadoA != null ? t.asignadoA.nombreCompleto : '—'}"></td>
+    <td>
+      <form th:action="@{'/trabajador/tickets/' + ${t.id} + '/estado'}" method="post">
+        <select name="estado">
+          <option th:selected="${t.estado.name()=='ABIERTO'}">ABIERTO</option>
+          <option th:selected="${t.estado.name()=='EN_PROCESO'}">EN_PROCESO</option>
+          <option th:selected="${t.estado.name()=='RESUELTO'}">RESUELTO</option>
+          <option th:selected="${t.estado.name()=='RECHAZADO'}">RECHAZADO</option>
+        </select>
+        <button type="submit">Actualizar</button>
+      </form>
+    </td>
+  </tr>
+  </tbody>
+</table>
+</body>
+</html>

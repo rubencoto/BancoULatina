@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Préstamos</title></head>
+<body>
+<h2>Préstamos</h2>
+
+<form method="get" th:action="@{/trabajador/prestamos}">
+  <select name="estado">
+    <option th:selected="${estado==null}" value="">Todos</option>
+    <option>PENDIENTE_DESEMBOLSO</option>
+    <option>ACTIVO</option>
+    <option>CERRADO</option>
+    <option>INCUMPLIDO</option>
+  </select>
+  <button type="submit">Filtrar</button>
+</form>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th><th>Cliente</th><th>Monto</th><th>Tasa anual</th>
+      <th>Plazo</th><th>Estado</th><th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr th:each="p : ${prestamos}">
+    <td th:text="${p.id}"></td>
+    <td th:text="${p.cliente.nombreCompleto}"></td>
+    <td th:text="${p.montoPrincipal}"></td>
+    <td th:text="${#numbers.formatDecimal(p.tasaAnual*100,1,2)} + '%'"></td>
+    <td th:text="${p.plazoMeses}"></td>
+    <td th:text="${p.estado}"></td>
+    <td>
+      <form th:action="@{'/trabajador/prestamos/' + ${p.id} + '/estado'}" method="post" style="display:inline">
+        <input type="hidden" name="estado" value="ACTIVO"><button th:disabled="${p.estado.name() != 'PENDIENTE_DESEMBOLSO'}">Activar</button>
+      </form>
+      <form th:action="@{'/trabajador/prestamos/' + ${p.id} + '/estado'}" method="post" style="display:inline">
+        <input type="hidden" name="estado" value="CERRADO"><button>Cerrar</button>
+      </form>
+      <form th:action="@{'/trabajador/prestamos/' + ${p.id} + '/estado'}" method="post" style="display:inline">
+        <input type="hidden" name="estado" value="INCUMPLIDO"><button>Incumplido</button>
+      </form>
+    </td>
+  </tr>
+  </tbody>
+</table>
+</body>
+</html>

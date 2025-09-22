@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Mis Préstamos</title></head>
+<body>
+<h2>Mis Préstamos</h2>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th><th>Monto</th><th>Tasa anual</th><th>Plazo (meses)</th>
+      <th>Inicio</th><th>Fin</th><th>Saldo</th><th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr th:each="p : ${prestamos}">
+    <td th:text="${p.id}"></td>
+    <td th:text="${p.montoPrincipal}"></td>
+    <td th:text="${#numbers.formatDecimal(p.tasaAnual*100,1,2)} + '%'"></td>
+    <td th:text="${p.plazoMeses}"></td>
+    <td th:text="${p.fechaInicio}">-</td>
+    <td th:text="${p.fechaFin}">-</td>
+    <td th:text="${p.saldoPendiente}"></td>
+    <td th:text="${p.estado}"></td>
+  </tr>
+  </tbody>
+</table>
+</body>
+</html>
+

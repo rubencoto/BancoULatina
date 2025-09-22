@@ -1,0 +1,10 @@
+package cr.ac.ulatina.banco.entidad;
+
+public enum TipoMovimiento {
+    DEPOSITO,
+    RETIRO,
+    TRANSFERENCIA_INTERNA_SALIDA,
+    TRANSFERENCIA_INTERNA_ENTRADA,
+    TRANSFERENCIA_SINPE_SALIDA,
+    TRANSFERENCIA_SINPE_ENTRADA
+}

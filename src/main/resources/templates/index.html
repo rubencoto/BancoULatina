@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banco U Latina - Sistema Bancario</title>
+  <link rel="stylesheet" href="/css/estilos.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏦</text></svg>">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <h1>🏦 Banco U Latina</h1>
+      <p>Sistema de Gestión Bancaria Digital</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="main-content text-center">
+      <h2>Bienvenido al Sistema Bancario</h2>
+      <p class="mb-2">Seleccione su tipo de usuario para continuar</p>
+
+      <div class="card-grid">
+        <!-- Card para Trabajadores -->
+        <div class="card">
+          <div class="text-center">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">👨‍💼</div>
+            <h3>Panel de Trabajador</h3>
+            <p class="mb-2">Acceso para empleados del banco. Gestione clientes, préstamos, solicitudes y tickets de soporte.</p>
+
+            <div class="flex gap-1 justify-center">
+              <a href="/auth/trabajador/registrar" class="btn btn-secondary">
+                📝 Registrarse
+              </a>
+              <a href="/auth/iniciar-sesion?tipo=trabajador" class="btn btn-primary">
+                🔐 Iniciar Sesión
+              </a>
+            </div>
+
+            <div class="mt-2" style="font-size: 0.875rem; color: var(--text-secondary);">
+              <strong>Funciones disponibles:</strong><br>
+              • Gestión de clientes<br>
+              • Aprobación de préstamos<br>
+              • Manejo de tickets<br>
+              • Reportes y estadísticas
+            </div>
+          </div>
+        </div>
+
+        <!-- Card para Clientes -->
+        <div class="card">
+          <div class="text-center">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">👤</div>
+            <h3>Portal del Cliente</h3>
+            <p class="mb-2">Acceso para clientes del banco. Consulte sus cuentas, solicite productos y gestione sus finanzas.</p>
+
+            <div class="flex gap-1 justify-center">
+              <a href="/auth/cliente/registrar" class="btn btn-secondary">
+                📝 Registrarse
+              </a>
+              <a href="/auth/iniciar-sesion?tipo=cliente" class="btn btn-primary">
+                🔐 Iniciar Sesión
+              </a>
+            </div>
+
+            <div class="mt-2" style="font-size: 0.875rem; color: var(--text-secondary);">
+              <strong>Servicios disponibles:</strong><br>
+              • Consulta de cuentas<br>
+              • Solicitud de préstamos<br>
+              • Calculadora financiera<br>
+              • Soporte técnico
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información adicional -->
+      <div class="card mt-2">
+        <h3>🛡️ Seguridad y Confianza</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; text-align: left;">
+          <div>
+            <h4>🔒 Datos Protegidos</h4>
+            <p>Sus datos están protegidos con encriptación de última generación y protocolos de seguridad bancaria.</p>
+          </div>
+          <div>
+            <h4>⚡ Disponibilidad 24/7</h4>
+            <p>Acceda a sus servicios bancarios las 24 horas del día, los 7 días de la semana.</p>
+          </div>
+          <div>
+            <h4>📞 Soporte Especializado</h4>
+            <p>Nuestro equipo de soporte está disponible para ayudarle con cualquier consulta o problema.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer style="background: var(--text-primary); color: white; text-align: center; padding: 2rem 0; margin-top: 3rem;">
+    <div class="container">
+      <p>&copy; 2024 Banco U Latina. Todos los derechos reservados.</p>
+      <p style="font-size: 0.875rem; opacity: 0.8;">Sistema desarrollado con Spring Boot y tecnologías modernas</p>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

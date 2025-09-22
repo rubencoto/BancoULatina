@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Préstamo - Banco U Latina</title>
+  <link rel="stylesheet" href="/css/estilos.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <h1>🧮 Calculadora de Préstamos</h1>
+      <p>Simule su préstamo y conozca las cuotas</p>
+    </div>
+  </header>
+
+  <nav>
+    <div class="container">
+      <a href="/cliente/inicio">🏠 Inicio</a>
+      <a href="/cliente/billetera">💳 Mi Billetera</a>
+      <a href="/cliente/prestamos">💰 Préstamos</a>
+      <a href="/cliente/calculadora-prestamo" class="active">🧮 Calculadora</a>
+      <a href="/cliente/solicitudes">📄 Solicitudes</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="card-grid" style="grid-template-columns: 1fr 1fr; gap: 2rem;">
+      <!-- Formulario de Cálculo -->
+      <div class="card">
+        <h3>💡 Parámetros del Préstamo</h3>
+
+        <form method="post"
+              th:action="@{/cliente/calculadora-prestamo}"
+              th:object="${form}"
+              id="loan-calculator-form"
+              class="fade-in">
+
+          <div class="form-group">
+            <label for="monto">💰 Monto del Préstamo (CRC)</label>
+            <input type="number"
+                   id="monto"
+                   th:field="*{monto}"
+                   placeholder="500,000"
+                   step="1000"
+                   min="50000"
+                   max="50000000"
+                   required>
+            <div class="slider-container">
+              <input type="range"
+                     id="montoSlider"
+                     min="50000"
+                     max="5000000"
+                     step="50000"
+                     th:value="*{monto}">
+              <div class="slider-labels">
+                <span>₡50K</span>
+                <span>₡5M</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="tasaAnual">📊 Tasa de Interés Anual (%)</label>
+            <input type="number"
+                   id="tasaAnual"
+                   th:field="*{tasaAnual}"
+                   placeholder="12.5"
+                   step="0.1"
+                   min="1"
+                   max="50"
+                   required>
+            <div class="slider-container">
+              <input type="range"
+                     id="tasaSlider"
+                     min="5"
+                     max="30"
+                     step="0.5"
+                     th:value="*{tasaAnual * 100}">
+              <div class="slider-labels">
+                <span>5%</span>
+                <span>30%</span>
+              </div>
+            </div>
+            <small style="color: var(--text-secondary);">
+              Tasas vigentes: Personal 12-18%, Hipotecario 8-12%
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="plazoMeses">📅 Plazo (Meses)</label>
+            <input type="number"
+                   id="plazoMeses"
+                   th:field="*{plazoMeses}"
+                   placeholder="24"
+                   min="6"
+                   max="360"
+                   required>
+            <div class="slider-container">
+              <input type="range"
+                     id="plazoSlider"
+                     min="6"
+                     max="240"
+                     step="6"
+                     th:value="*{plazoMeses}">
+              <div class="slider-labels">
+                <span>6 meses</span>
+                <span>20 años</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>🏷️ Tipo de Préstamo</label>
+            <select id="tipoPrestamo" onchange="updateRates()">
+              <option value="personal">💼 Personal (12-18%)</option>
+              <option value="vehiculo">🚗 Vehículo (10-15%)</option>
+              <option value="hipotecario">🏠 Hipotecario (8-12%)</option>
+              <option value="comercial">🏢 Comercial (15-25%)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;">
+            🧮 Calcular Préstamo
+          </button>
+        </form>
+
+        <!-- Preset de cálculos rápidos -->
+        <div class="mt-2">
+          <h4>⚡ Cálculos Rápidos</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <button class="btn btn-secondary btn-sm" onclick="setPreset(500000, 12, 36)">
+              🏠 Casa ₡500K
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="setPreset(2000000, 10, 60)">
+              🚗 Auto ₡2M
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="setPreset(100000, 15, 12)">
+              💼 Personal ₡100K
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="setPreset(5000000, 8, 180)">
+              🏡 Hipoteca ₡5M
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resultados en Tiempo Real -->
+      <div class="card">
+        <h3>📊 Resultados de la Simulación</h3>
+        <div id="loan-preview">
+          <div class="text-center" style="padding: 2rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🧮</div>
+            <p>Complete los datos para ver la simulación</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultados Detallados -->
+    <div th:if="${cuotaMensual != null}" class="card fade-in">
+      <h3>📈 Análisis Financiero Detallado</h3>
+
+      <!-- Resumen Principal -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="text-center p-2" style="background: var(--primary-color); color: white; border-radius: var(--border-radius);">
+          <div style="font-size: 1.5rem;">💳</div>
+          <div style="font-size: 1.25rem; font-weight: bold;" th:text="${#numbers.formatDecimal(cuotaMensual,0,2)}">₡50,000</div>
+          <div>Cuota Mensual</div>
+        </div>
+        <div class="text-center p-2" style="background: var(--success-color); color: white; border-radius: var(--border-radius);">
+          <div style="font-size: 1.5rem;">💰</div>
+          <div style="font-size: 1.25rem; font-weight: bold;" th:text="${#numbers.formatDecimal(pagoTotal,0,2)}">₡600,000</div>
+          <div>Pago Total</div>
+        </div>
+        <div class="text-center p-2" style="background: var(--warning-color); color: white; border-radius: var(--border-radius);">
+          <div style="font-size: 1.5rem;">📊</div>
+          <div style="font-size: 1.25rem; font-weight: bold;" th:text="${#numbers.formatDecimal(interesTotal,0,2)}">₡100,000</div>
+          <div>Interés Total</div>
+        </div>
+        <div class="text-center p-2" style="background: var(--secondary-color); color: white; border-radius: var(--border-radius);">
+          <div style="font-size: 1.5rem;">📅</div>
+          <div style="font-size: 1.25rem; font-weight: bold;" th:text="${form.plazoMeses}">24</div>
+          <div>Meses</div>
+        </div>
+      </div>
+
+      <!-- Gráfico de Distribución -->
+      <div class="card" style="background: var(--light-bg);">
+        <h4>📊 Distribución del Pago</h4>
+        <div style="display: flex; align-items: center; gap: 2rem;">
+          <div style="flex: 1;">
+            <div class="progress-bar">
+              <div class="progress-fill"
+                   style="width: [[${(form.monto / pagoTotal) * 100}]]%; background: var(--primary-color);"
+                   th:style="'width: ' + ${(form.monto / pagoTotal) * 100} + '%; background: var(--primary-color);'"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+              <span>💰 Capital: <span th:text="${#numbers.formatDecimal(form.monto,0,2)}">₡500,000</span></span>
+              <span>📊 Interés: <span th:text="${#numbers.formatDecimal(interesTotal,0,2)}">₡100,000</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de Amortización -->
+      <div class="mt-2">
+        <div class="flex justify-between align-center mb-2">
+          <h4>📋 Cronograma de Amortización</h4>
+          <div class="flex gap-1">
+            <button class="btn btn-secondary btn-sm" onclick="toggleAmortization()">
+              👁️ Mostrar/Ocultar Detalle
+            </button>
+            <button class="btn btn-success btn-sm" onclick="exportAmortization()">
+              📊 Exportar
+            </button>
+          </div>
+        </div>
+
+        <div id="amortization-table" class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>📅 Fecha</th>
+                <th>💳 Cuota</th>
+                <th>📊 Interés</th>
+                <th>💰 Abono</th>
+                <th>💵 Saldo</th>
+                <th>📈 % Pagado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="fila, iterStat : ${cronograma}">
+                <td th:text="${fila.numeroMes()}" style="font-weight: bold;"></td>
+                <td th:text="${#temporals.format(fila.fechaVencimiento(), 'dd/MM/yyyy')}"></td>
+                <td th:text="${#numbers.formatDecimal(fila.cuota(),0,2)}" style="color: var(--primary-color); font-weight: bold;"></td>
+                <td th:text="${#numbers.formatDecimal(fila.interes(),0,2)}" style="color: var(--danger-color);"></td>
+                <td th:text="${#numbers.formatDecimal(fila.abonoPrincipal(),0,2)}" style="color: var(--success-color);"></td>
+                <td th:text="${#numbers.formatDecimal(fila.saldo(),0,2)}"></td>
+                <td>
+                  <div class="progress-bar" style="width: 60px;">
+                    <div class="progress-fill"
+                         style="background: var(--success-color);"
+                         th:style="'width: ' + ${((form.monto - fila.saldo()) / form.monto) * 100} + '%; background: var(--success-color);'"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Consejos Financieros -->
+      <div class="card mt-2" style="background: linear-gradient(135deg, var(--success-color), #059669); color: white;">
+        <h4>💡 Consejos Financieros</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+          <div>
+            <strong>📊 Su cuota representa:</strong><br>
+            <span th:text="${#numbers.formatDecimal((cuotaMensual / 500000) * 100, 1, 1)}">10</span>% de un salario de ₡500,000
+          </div>
+          <div>
+            <strong>💰 Ahorro recomendado:</strong><br>
+            Mantenga al menos 3 meses de cuotas como reserva
+          </div>
+          <div>
+            <strong>⚡ Pago adicional:</strong><br>
+            Un abono extra anual reduce 2-3 años el plazo
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      new LoanCalculator();
+      syncSliders();
+    });
+
+    function syncSliders() {
+      const montoInput = document.getElementById('monto');
+      const montoSlider = document.getElementById('montoSlider');
+      const tasaInput = document.getElementById('tasaAnual');
+      const tasaSlider = document.getElementById('tasaSlider');
+      const plazoInput = document.getElementById('plazoMeses');
+      const plazoSlider = document.getElementById('plazoSlider');
+
+      // Sincronizar monto
+      montoInput.addEventListener('input', () => {
+        montoSlider.value = montoInput.value;
+        calculateInRealTime();
+      });
+      montoSlider.addEventListener('input', () => {
+        montoInput.value = montoSlider.value;
+        calculateInRealTime();
+      });
+
+      // Sincronizar tasa
+      tasaInput.addEventListener('input', () => {
+        tasaSlider.value = tasaInput.value;
+        calculateInRealTime();
+      });
+      tasaSlider.addEventListener('input', () => {
+        tasaInput.value = (tasaSlider.value / 100).toFixed(3);
+        calculateInRealTime();
+      });
+
+      // Sincronizar plazo
+      plazoInput.addEventListener('input', () => {
+        plazoSlider.value = plazoInput.value;
+        calculateInRealTime();
+      });
+      plazoSlider.addEventListener('input', () => {
+        plazoInput.value = plazoSlider.value;
+        calculateInRealTime();
+      });
+    }
+
+    function calculateInRealTime() {
+      const amount = parseFloat(document.getElementById('monto').value) || 0;
+      const rate = parseFloat(document.getElementById('tasaAnual').value) || 0;
+      const months = parseInt(document.getElementById('plazoMeses').value) || 0;
+
+      if (amount > 0 && rate > 0 && months > 0) {
+        const monthlyRate = rate / 12;
+        const monthlyPayment = amount * (monthlyRate * Math.pow(1 + monthlyRate, months)) /
+                              (Math.pow(1 + monthlyRate, months) - 1);
+
+        const totalPayment = monthlyPayment * months;
+        const totalInterest = totalPayment - amount;
+
+        updatePreview(monthlyPayment, totalPayment, totalInterest, amount, months);
+      } else {
+        resetPreview();
+      }
+    }
+
+    function updatePreview(monthly, total, interest, principal, months) {
+      const preview = document.getElementById('loan-preview');
+      const interestRate = (interest / principal) * 100;
+
+      preview.innerHTML = `
+        <div style="text-align: center;">
+          <div style="font-size: 2rem; color: var(--primary-color); font-weight: bold; margin-bottom: 1rem;">
+            ${BancoApp.formatCurrency(monthly)}
+          </div>
+          <p style="font-size: 1.1rem; margin-bottom: 1rem;">Cuota Mensual</p>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <div style="color: var(--success-color); font-weight: bold;">
+                ${BancoApp.formatCurrency(total)}
+              </div>
+              <small>Pago Total</small>
+            </div>
+            <div>
+              <div style="color: var(--warning-color); font-weight: bold;">
+                ${BancoApp.formatCurrency(interest)}
+              </div>
+              <small>Interés Total</small>
+            </div>
+          </div>
+
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${(principal/total)*100}%; background: var(--primary-color);"></div>
+          </div>
+          <small>💰 Capital vs 📊 Interés (${interestRate.toFixed(1)}%)</small>
+
+          <div style="margin-top: 1rem; padding: 1rem; background: var(--light-bg); border-radius: var(--border-radius);">
+            <strong>📊 Análisis:</strong><br>
+            <small>
+              En ${months} meses pagará ${BancoApp.formatCurrency(interest)} adicionales en intereses
+            </small>
+          </div>
+        </div>
+      `;
+    }
+
+    function resetPreview() {
+      const preview = document.getElementById('loan-preview');
+      preview.innerHTML = `
+        <div class="text-center" style="padding: 2rem;">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">🧮</div>
+          <p>Complete los datos para ver la simulación</p>
+        </div>
+      `;
+    }
+
+    function setPreset(monto, tasa, plazo) {
+      document.getElementById('monto').value = monto;
+      document.getElementById('tasaAnual').value = (tasa / 100).toFixed(3);
+      document.getElementById('plazoMeses').value = plazo;
+
+      document.getElementById('montoSlider').value = monto;
+      document.getElementById('tasaSlider').value = tasa;
+      document.getElementById('plazoSlider').value = plazo;
+
+      calculateInRealTime();
+    }
+
+    function updateRates() {
+      const tipo = document.getElementById('tipoPrestamo').value;
+      const tasaInput = document.getElementById('tasaAnual');
+
+      const rates = {
+        personal: 0.15,
+        vehiculo: 0.125,
+        hipotecario: 0.10,
+        comercial: 0.20
+      };
+
+      tasaInput.value = rates[tipo];
+      document.getElementById('tasaSlider').value = rates[tipo] * 100;
+      calculateInRealTime();
+    }
+
+    function toggleAmortization() {
+      const table = document.getElementById('amortization-table');
+      table.style.display = table.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function exportAmortization() {
+      BancoApp.showNotification('Exportando cronograma...', 'info');
+      setTimeout(() => {
+        BancoApp.showNotification('Cronograma exportado correctamente', 'success');
+      }, 1500);
+    }
+  </script>
+
+  <style>
+    .slider-container {
+      margin-top: 0.5rem;
+    }
+
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border-color);
+      outline: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      cursor: pointer;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--border-color);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    nav a.active {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+  </style>
+</body>
+</html>

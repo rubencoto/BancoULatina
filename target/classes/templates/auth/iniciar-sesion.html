@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión - Banco U Latina</title>
+  <link rel="stylesheet" href="/css/estilos.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <h1>🏦 Banco U Latina</h1>
+      <p>Iniciar Sesión</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="main-content" style="max-width: 500px; margin: 2rem auto;">
+      <div class="text-center mb-2">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">🔐</div>
+        <h2>Acceso al Sistema</h2>
+        <p>Ingrese sus credenciales para continuar</p>
+      </div>
+
+      <!-- Alertas de error o éxito -->
+      <div th:if="${param.error}" class="alert alert-error">
+        <strong>Error:</strong> Credenciales incorrectas. Verifique su email y contraseña.
+      </div>
+
+      <div th:if="${param.logout}" class="alert alert-success">
+        <strong>Sesión cerrada:</strong> Ha cerrado sesión correctamente.
+      </div>
+
+      <form method="post" th:action="@{/auth/iniciar-sesion}" class="fade-in">
+        <div class="form-group">
+          <label for="username">📧 Correo Electrónico</label>
+          <input type="email"
+                 id="username"
+                 name="username"
+                 placeholder="ejemplo@email.com"
+                 required
+                 autocomplete="email"
+                 th:value="${param.username}">
+        </div>
+
+        <div class="form-group">
+          <label for="password">🔒 Contraseña</label>
+          <input type="password"
+                 id="password"
+                 name="password"
+                 placeholder="Ingrese su contraseña"
+                 required
+                 autocomplete="current-password">
+        </div>
+
+        <div class="form-group">
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal;">
+            <input type="checkbox" name="remember-me" style="width: auto;">
+            Recordar mi sesión
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1rem;">
+          🚀 Iniciar Sesión
+        </button>
+      </form>
+
+      <div class="text-center mt-2">
+        <p style="color: var(--text-secondary);">¿No tiene una cuenta?</p>
+        <div class="flex gap-1 justify-center">
+          <a href="/auth/cliente/registrar" class="btn btn-secondary">
+            Registro Cliente
+          </a>
+          <a href="/auth/trabajador/registrar" class="btn btn-secondary">
+            Registro Trabajador
+          </a>
+        </div>
+      </div>
+
+      <div class="text-center mt-2">
+        <a href="/" style="color: var(--primary-color); text-decoration: none;">
+          ← Volver al inicio
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    // Auto-focus en el primer campo
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('username').focus();
+    });
+  </script>
+</body>
+</html>
