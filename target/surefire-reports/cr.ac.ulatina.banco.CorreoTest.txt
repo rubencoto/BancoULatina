@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: cr.ac.ulatina.banco.CorreoTest
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 30.50 s -- in cr.ac.ulatina.banco.CorreoTest

@@ -4,6 +4,7 @@ C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\contr
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\entidad\TransferenciaExterna.java
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\entidad\Rol.java
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\dto\FilaAmortizacion.java
+C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\configuracion\RoleInterceptor.java
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\entidad\TarjetaDebito.java
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\repositorio\AsientoContableRepositorio.java
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\controlador\PrestamoControlador.java
@@ -14,6 +15,7 @@ C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\repos
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\entidad\Ticket.java
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\entidad\TipoProducto.java
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\entidad\EstadoSolicitud.java
+C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\configuracion\WebConfig.java
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\repositorio\AsientoLineaRepositorio.java
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\repositorio\PrestamoRepositorio.java
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\entidad\TipoMovimiento.java
@@ -29,6 +31,7 @@ C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\repos
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\dto\RegistrarTrabajadorDto.java
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\entidad\Usuario.java
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\entidad\Moneda.java
+C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\controlador\ErrorControlador.java
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\controlador\SolicitudProductoControlador.java
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\entidad\AsientoLinea.java
 C:\Users\ruben\IdeaProjects\BancoULatina\src\main\java\cr\ac\ulatina\banco\repositorio\TicketRepositorio.java

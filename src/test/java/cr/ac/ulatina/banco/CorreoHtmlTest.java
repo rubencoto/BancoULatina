@@ -74,10 +74,15 @@ public class CorreoHtmlTest {
         String emailDestino = "rubencoto11@icloud.com";
 
         try {
-            alertaCorreoServicio.enviarAlertaActividadSospechosa(
+            // Usar el método enviarCorreoSimple que sí existe en el servicio
+            alertaCorreoServicio.enviarCorreoSimple(
                 emailDestino,
-                "Rubén Coto",
-                "Intento de acceso desde ubicación no reconocida (Dirección IP: 192.168.1.100)"
+                "Alerta de Actividad Sospechosa - Banco U Latina",
+                "Estimado Rubén Coto,\n\n" +
+                "Se ha detectado actividad sospechosa en su cuenta:\n" +
+                "Intento de acceso desde ubicación no reconocida (Dirección IP: 192.168.1.100)\n\n" +
+                "Si no fue usted, contacte inmediatamente a nuestro servicio al cliente.\n\n" +
+                "Saludos,\nEquipo de Seguridad de Banco U Latina"
             );
             System.out.println("✅ Alerta de actividad sospechosa enviada exitosamente");
 

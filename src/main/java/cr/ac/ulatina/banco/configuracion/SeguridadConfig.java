@@ -21,11 +21,19 @@ public class SeguridadConfig {
     public SecurityFilterChain filtro(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        // Recursos públicos
-                        .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll()
+                        // Recursos completamente públicos (sin redirección)
+                        .requestMatchers("/", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
 
-                        // Páginas de autenticación
-                        .requestMatchers("/auth/**").permitAll()
+                        // Rutas de autenticación completamente públicas
+                        .requestMatchers("/auth/iniciar-sesion",
+                                        "/auth/cliente/registrar",
+                                        "/auth/trabajador/registrar").permitAll()
+
+                        // POST para registro también público
+                        .requestMatchers("/auth/login").permitAll()
+
+                        // Console H2 para desarrollo
+                        .requestMatchers("/h2-console/**").permitAll()
 
                         // Páginas específicas para trabajadores
                         .requestMatchers("/trabajador/**").hasRole("TRABAJADOR")
@@ -62,7 +70,10 @@ public class SeguridadConfig {
                         .maximumSessions(1)
                         .maxSessionsPreventsLogin(false)
                 )
-                .csrf(csrf -> csrf.disable()); // Solo para desarrollo
+                .headers(headers -> headers.frameOptions().disable()) // Para H2 Console
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/h2-console/**")
+                        .disable()); // Solo para desarrollo
 
         return http.build();
     }

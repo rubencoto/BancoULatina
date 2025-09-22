@@ -29,32 +29,38 @@ public class AutenticacionControlador {
 
     @GetMapping("/cliente/registrar")
     public String mostrarRegistroCliente(Model model) {
-        model.addAttribute("usuario", new Usuario());
+        model.addAttribute("form", new RegistroForm());
         model.addAttribute("tipoUsuario", "cliente");
         return "auth/cliente/registrar";
     }
 
     @GetMapping("/trabajador/registrar")
     public String mostrarRegistroTrabajador(Model model) {
-        model.addAttribute("usuario", new Usuario());
+        model.addAttribute("form", new RegistroForm());
         model.addAttribute("tipoUsuario", "trabajador");
         return "auth/trabajador/registrar";
     }
 
     @PostMapping("/cliente/registrar")
-    public String registrarCliente(@ModelAttribute Usuario usuario,
-                                   @RequestParam String contrasena,
+    public String registrarCliente(@ModelAttribute("form") RegistroForm form,
                                    RedirectAttributes redirectAttributes) {
         try {
             // Verificar si el correo ya existe
-            if (usuarioRepositorio.findByCorreo(usuario.getCorreo()).isPresent()) {
+            if (usuarioRepositorio.findByCorreo(form.getCorreo()).isPresent()) {
                 redirectAttributes.addFlashAttribute("error", "El correo electrónico ya está registrado");
                 return "redirect:/auth/cliente/registrar";
             }
 
-            usuario.setHashContrasena(passwordEncoder.encode(contrasena));
-            usuario.setRol(Rol.CLIENTE);
-            usuario.setHabilitado(true);
+            // Crear nuevo usuario
+            Usuario usuario = Usuario.builder()
+                    .nombreCompleto(form.getNombreCompleto())
+                    .correo(form.getCorreo())
+                    .cedula(form.getCedula())
+                    .hashContrasena(passwordEncoder.encode(form.getContrasena()))
+                    .rol(Rol.CLIENTE)
+                    .habilitado(true)
+                    .build();
+
             usuarioRepositorio.save(usuario);
 
             redirectAttributes.addFlashAttribute("success", "Registro exitoso. Ahora puede iniciar sesión.");
@@ -66,19 +72,25 @@ public class AutenticacionControlador {
     }
 
     @PostMapping("/trabajador/registrar")
-    public String registrarTrabajador(@ModelAttribute Usuario usuario,
-                                      @RequestParam String contrasena,
+    public String registrarTrabajador(@ModelAttribute("form") RegistroForm form,
                                       RedirectAttributes redirectAttributes) {
         try {
             // Verificar si el correo ya existe
-            if (usuarioRepositorio.findByCorreo(usuario.getCorreo()).isPresent()) {
+            if (usuarioRepositorio.findByCorreo(form.getCorreo()).isPresent()) {
                 redirectAttributes.addFlashAttribute("error", "El correo electrónico ya está registrado");
                 return "redirect:/auth/trabajador/registrar";
             }
 
-            usuario.setHashContrasena(passwordEncoder.encode(contrasena));
-            usuario.setRol(Rol.TRABAJADOR);
-            usuario.setHabilitado(true);
+            // Crear nuevo usuario
+            Usuario usuario = Usuario.builder()
+                    .nombreCompleto(form.getNombreCompleto())
+                    .correo(form.getCorreo())
+                    .cedula(form.getCedula())
+                    .hashContrasena(passwordEncoder.encode(form.getContrasena()))
+                    .rol(Rol.TRABAJADOR)
+                    .habilitado(true)
+                    .build();
+
             usuarioRepositorio.save(usuario);
 
             redirectAttributes.addFlashAttribute("success", "Registro exitoso. Ahora puede iniciar sesión.");
@@ -87,5 +99,29 @@ public class AutenticacionControlador {
             redirectAttributes.addFlashAttribute("error", "Error al registrar el usuario: " + e.getMessage());
             return "redirect:/auth/trabajador/registrar";
         }
+    }
+
+    // Clase interna para el formulario de registro
+    public static class RegistroForm {
+        private String nombreCompleto;
+        private String correo;
+        private String cedula;
+        private String contrasena;
+
+        // Constructores
+        public RegistroForm() {}
+
+        // Getters y Setters
+        public String getNombreCompleto() { return nombreCompleto; }
+        public void setNombreCompleto(String nombreCompleto) { this.nombreCompleto = nombreCompleto; }
+
+        public String getCorreo() { return correo; }
+        public void setCorreo(String correo) { this.correo = correo; }
+
+        public String getCedula() { return cedula; }
+        public void setCedula(String cedula) { this.cedula = cedula; }
+
+        public String getContrasena() { return contrasena; }
+        public void setContrasena(String contrasena) { this.contrasena = contrasena; }
     }
 }
