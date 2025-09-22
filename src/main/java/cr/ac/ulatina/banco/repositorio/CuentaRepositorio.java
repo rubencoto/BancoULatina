@@ -9,6 +9,8 @@ import java.util.*;
 public interface CuentaRepositorio extends JpaRepository<Cuenta, Long> {
     List<Cuenta> findByDueno(Usuario dueno);
 
+    List<Cuenta> findByActivaTrue();
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select c from Cuenta c where c.id = :id")
     Optional<Cuenta> bloquearPorId(Long id);

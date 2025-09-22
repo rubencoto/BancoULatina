@@ -22,75 +22,93 @@
         <p>Ingrese sus credenciales para continuar</p>
       </div>
 
-      <!-- Alertas de error o éxito -->
-      <div th:if="${param.error}" class="alert alert-error">
-        <strong>Error:</strong> Credenciales incorrectas. Verifique su email y contraseña.
+      <!-- Alertas de error específicas -->
+      <div th:if="${param.error == 'true'}" class="alert alert-danger">
+        <strong>❌ Error de autenticación:</strong> Credenciales incorrectas. Verifique su email y contraseña.
       </div>
 
-      <div th:if="${param.logout}" class="alert alert-success">
-        <strong>Sesión cerrada:</strong> Ha cerrado sesión correctamente.
+      <div th:if="${param.error == 'access_denied'}" class="alert alert-warning">
+        <strong>🚫 Acceso denegado:</strong> No tienes permisos para acceder a la página solicitada. Inicia sesión con una cuenta autorizada.
       </div>
 
-      <form method="post" th:action="@{/auth/iniciar-sesion}" class="fade-in">
+      <div th:if="${param.error == 'invalid_role'}" class="alert alert-danger">
+        <strong>⚠️ Rol inválido:</strong> Tu cuenta no tiene un rol válido asignado. Contacta al administrador del sistema.
+      </div>
+
+      <div th:if="${param.logout == 'true'}" class="alert alert-success">
+        <strong>✅ Sesión cerrada:</strong> Ha cerrado sesión correctamente.
+      </div>
+
+      <div th:if="${param.expired}" class="alert alert-warning">
+        <strong>⏰ Sesión expirada:</strong> Tu sesión ha expirado. Por favor, inicia sesión nuevamente.
+      </div>
+
+      <form method="post" th:action="@{/auth/login}" class="fade-in">
         <div class="form-group">
-          <label for="username">📧 Correo Electrónico</label>
+          <label for="correo">📧 Correo Electrónico</label>
           <input type="email"
-                 id="username"
-                 name="username"
+                 id="correo"
+                 name="correo"
                  placeholder="ejemplo@email.com"
                  required
                  autocomplete="email"
-                 th:value="${param.username}">
+                 th:value="${param.correo}">
         </div>
 
         <div class="form-group">
-          <label for="password">🔒 Contraseña</label>
+          <label for="contrasena">🔒 Contraseña</label>
           <input type="password"
-                 id="password"
-                 name="password"
+                 id="contrasena"
+                 name="contrasena"
                  placeholder="Ingrese su contraseña"
                  required
                  autocomplete="current-password">
         </div>
 
         <div class="form-group">
-          <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal;">
-            <input type="checkbox" name="remember-me" style="width: auto;">
-            Recordar mi sesión
-          </label>
+          <button type="submit" class="btn btn-primary btn-full">
+            🚀 Iniciar Sesión
+          </button>
         </div>
-
-        <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1rem;">
-          🚀 Iniciar Sesión
-        </button>
       </form>
 
-      <div class="text-center mt-2">
-        <p style="color: var(--text-secondary);">¿No tiene una cuenta?</p>
-        <div class="flex gap-1 justify-center">
-          <a href="/auth/cliente/registrar" class="btn btn-secondary">
-            Registro Cliente
-          </a>
-          <a href="/auth/trabajador/registrar" class="btn btn-secondary">
-            Registro Trabajador
-          </a>
+      <div class="info-section">
+        <h3>ℹ️ Tipos de Usuario</h3>
+        <div class="info-grid">
+          <div class="info-card">
+            <h4>👥 Clientes</h4>
+            <p>Acceso a préstamos, billetera, solicitudes y soporte</p>
+          </div>
+          <div class="info-card">
+            <h4>🏢 Trabajadores</h4>
+            <p>Gestión de clientes, préstamos, solicitudes y tickets</p>
+          </div>
         </div>
       </div>
 
-      <div class="text-center mt-2">
-        <a href="/" style="color: var(--primary-color); text-decoration: none;">
-          ← Volver al inicio
-        </a>
+      <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+        <p style="color: var(--text-secondary); font-size: 0.875rem;">
+          ¿No tienes cuenta? <a href="/auth/cliente/registrar" style="color: var(--primary-color);">Registrarse como Cliente</a>
+        </p>
+        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;">
+          <a href="/" style="color: var(--secondary-color);">🏠 Volver al Inicio</a>
+        </p>
       </div>
     </div>
   </div>
 
-  <script src="/js/app.js"></script>
   <script>
-    // Auto-focus en el primer campo
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('username').focus();
+    // Auto-focus en el campo de email
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('correo').focus();
     });
+
+    // Mostrar/ocultar contraseña
+    function togglePassword() {
+      const passwordField = document.getElementById('contrasena');
+      const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordField.setAttribute('type', type);
+    }
   </script>
 </body>
 </html>

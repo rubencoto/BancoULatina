@@ -1,48 +1,244 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Préstamos</title></head>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Préstamos - Banco U Latina</title>
+  <link rel="stylesheet" href="/css/estilos.css"/>
+</head>
 <body>
-<h2>Préstamos</h2>
+  <header class="header">
+    <div class="container">
+      <h1>💰 Gestión de Préstamos</h1>
+      <p>Administra y supervisa todos los préstamos del banco</p>
+    </div>
+  </header>
 
-<form method="get" th:action="@{/trabajador/prestamos}">
-  <select name="estado">
-    <option th:selected="${estado==null}" value="">Todos</option>
-    <option>PENDIENTE_DESEMBOLSO</option>
-    <option>ACTIVO</option>
-    <option>CERRADO</option>
-    <option>INCUMPLIDO</option>
-  </select>
-  <button type="submit">Filtrar</button>
-</form>
+  <nav>
+    <div class="container">
+      <a href="/trabajador/inicio">🏠 Inicio</a>
+      <a href="/trabajador/clientes">👥 Clientes</a>
+      <a href="/trabajador/prestamos" class="active">💰 Préstamos</a>
+      <a href="/trabajador/solicitudes">📄 Solicitudes</a>
+      <a href="/trabajador/tickets">🎫 Tickets</a>
+    </div>
+  </nav>
 
-<table>
-  <thead>
-    <tr>
-      <th>ID</th><th>Cliente</th><th>Monto</th><th>Tasa anual</th>
-      <th>Plazo</th><th>Estado</th><th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-  <tr th:each="p : ${prestamos}">
-    <td th:text="${p.id}"></td>
-    <td th:text="${p.cliente.nombreCompleto}"></td>
-    <td th:text="${p.montoPrincipal}"></td>
-    <td th:text="${#numbers.formatDecimal(p.tasaAnual*100,1,2)} + '%'"></td>
-    <td th:text="${p.plazoMeses}"></td>
-    <td th:text="${p.estado}"></td>
-    <td>
-      <form th:action="@{'/trabajador/prestamos/' + ${p.id} + '/estado'}" method="post" style="display:inline">
-        <input type="hidden" name="estado" value="ACTIVO"><button th:disabled="${p.estado.name() != 'PENDIENTE_DESEMBOLSO'}">Activar</button>
+  <div class="container">
+    <!-- Notificación de actualización -->
+    <div th:if="${param.actualizado}" class="alert alert-success">
+      ✅ Estado del préstamo actualizado exitosamente.
+    </div>
+
+    <!-- Estadísticas de Préstamos -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Préstamos</h3>
+        <p class="stat-value" th:text="${#lists.size(prestamos)}">0</p>
+        <span class="stat-label">Préstamos registrados</span>
+      </div>
+      <div class="stat-card active">
+        <h3>Préstamos Activos</h3>
+        <p class="stat-value" th:text="${#lists.size(prestamos.?[estado.name() == 'ACTIVO'])}">0</p>
+        <span class="stat-label">En curso</span>
+      </div>
+      <div class="stat-card pending">
+        <h3>Pendientes Desembolso</h3>
+        <p class="stat-value" th:text="${#lists.size(prestamos.?[estado.name() == 'PENDIENTE_DESEMBOLSO'])}">0</p>
+        <span class="stat-label">Por activar</span>
+      </div>
+      <div class="stat-card closed">
+        <h3>Préstamos Cerrados</h3>
+        <p class="stat-value" th:text="${#lists.size(prestamos.?[estado.name() == 'CERRADO'])}">0</p>
+        <span class="stat-label">Finalizados</span>
+      </div>
+    </div>
+
+    <!-- Filtros y Búsqueda -->
+    <div class="card">
+      <div class="card-header">
+        <h3>🔍 Filtros</h3>
+      </div>
+
+      <form method="get" th:action="@{/trabajador/prestamos}" class="filter-form">
+        <div class="filter-group">
+          <label for="estado">📊 Estado del Préstamo</label>
+          <select name="estado" id="estado">
+            <option th:selected="${estado==null}" value="">🔍 Todos los estados</option>
+            <option th:selected="${estado != null and estado.name() == 'PENDIENTE_DESEMBOLSO'}" value="PENDIENTE_DESEMBOLSO">⏳ Pendiente Desembolso</option>
+            <option th:selected="${estado != null and estado.name() == 'ACTIVO'}" value="ACTIVO">✅ Activo</option>
+            <option th:selected="${estado != null and estado.name() == 'CERRADO'}" value="CERRADO">🔒 Cerrado</option>
+            <option th:selected="${estado != null and estado.name() == 'INCUMPLIDO'}" value="INCUMPLIDO">⚠️ Incumplido</option>
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
+          <a href="/trabajador/prestamos" class="btn btn-outline">🔄 Limpiar</a>
+        </div>
       </form>
-      <form th:action="@{'/trabajador/prestamos/' + ${p.id} + '/estado'}" method="post" style="display:inline">
-        <input type="hidden" name="estado" value="CERRADO"><button>Cerrar</button>
-      </form>
-      <form th:action="@{'/trabajador/prestamos/' + ${p.id} + '/estado'}" method="post" style="display:inline">
-        <input type="hidden" name="estado" value="INCUMPLIDO"><button>Incumplido</button>
-      </form>
-    </td>
-  </tr>
-  </tbody>
-</table>
+    </div>
+
+    <!-- Lista de Préstamos -->
+    <div class="card">
+      <div class="card-header">
+        <h3>📋 Lista de Préstamos</h3>
+        <span class="badge" th:text="${#lists.size(prestamos)} + ' préstamos'">0 préstamos</span>
+      </div>
+
+      <div th:if="${#lists.isEmpty(prestamos)}" class="empty-state">
+        <div class="empty-icon">💰</div>
+        <h3>No se encontraron préstamos</h3>
+        <p>No hay préstamos que coincidan con los filtros seleccionados</p>
+        <a href="/trabajador/prestamos" class="btn btn-secondary">Ver Todos</a>
+      </div>
+
+      <div th:if="${not #lists.isEmpty(prestamos)}" class="loans-table-container">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>👤 Cliente</th>
+              <th>💰 Monto</th>
+              <th>📊 Tasa</th>
+              <th>⏱️ Plazo</th>
+              <th>📅 Fechas</th>
+              <th>💳 Saldo</th>
+              <th>📊 Estado</th>
+              <th>⚙️ Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="p : ${prestamos}" th:classappend="${p.estado.name().toLowerCase()}">
+              <td>
+                <span class="loan-id">#<span th:text="${p.id}">001</span></span>
+              </td>
+              <td>
+                <div class="client-info">
+                  <span class="client-name" th:text="${p.cliente.nombreCompleto}">Juan Pérez</span>
+                  <small class="client-email" th:text="${p.cliente.correo}">juan@email.com</small>
+                </div>
+              </td>
+              <td>
+                <span class="amount" th:text="${#numbers.formatDecimal(p.montoPrincipal, 0, 'COMMA', 0, 'POINT')} + ' CRC'">₡1,000,000</span>
+              </td>
+              <td>
+                <span class="rate" th:text="${#numbers.formatDecimal(p.tasaAnual*100,1,2)} + '%'">12.00%</span>
+              </td>
+              <td>
+                <span class="term" th:text="${p.plazoMeses} + ' meses'">24 meses</span>
+              </td>
+              <td>
+                <div class="date-info">
+                  <div th:if="${p.fechaInicio != null}">
+                    <small>Inicio:</small>
+                    <span th:text="${#temporals.format(p.fechaInicio, 'dd/MM/yyyy')}">01/01/2024</span>
+                  </div>
+                  <div th:if="${p.fechaFin != null}">
+                    <small>Fin:</small>
+                    <span th:text="${#temporals.format(p.fechaFin, 'dd/MM/yyyy')}">01/01/2026</span>
+                  </div>
+                  <div th:if="${p.fechaInicio == null}">
+                    <small class="text-muted">Sin fechas</small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="balance" th:text="${#numbers.formatDecimal(p.saldoPendiente, 0, 'COMMA', 0, 'POINT')} + ' CRC'">₡800,000</span>
+                <div th:if="${p.estado.name() == 'ACTIVO'}" class="progress-mini">
+                  <div class="progress-bar-mini">
+                    <div class="progress-fill-mini" th:style="'width: ' + ${(p.montoPrincipal - p.saldoPendiente) / p.montoPrincipal * 100} + '%'"></div>
+                  </div>
+                  <small th:text="${#numbers.formatDecimal((p.montoPrincipal - p.saldoPendiente) / p.montoPrincipal * 100, 1, 0)} + '% pagado'">20% pagado</small>
+                </div>
+              </td>
+              <td>
+                <span class="status-badge" th:text="${p.estado}" th:classappend="${p.estado.name().toLowerCase()}">ACTIVO</span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <form th:action="@{'/trabajador/prestamos/' + ${p.id} + '/estado'}"
+                        method="post"
+                        style="display:inline"
+                        th:if="${p.estado.name() == 'PENDIENTE_DESEMBOLSO'}">
+                    <input type="hidden" name="estado" value="ACTIVO">
+                    <button type="submit" class="btn btn-sm btn-success" title="Activar préstamo">
+                      ✅ Activar
+                    </button>
+                  </form>
+
+                  <form th:action="@{'/trabajador/prestamos/' + ${p.id} + '/estado'}"
+                        method="post"
+                        style="display:inline"
+                        th:if="${p.estado.name() == 'ACTIVO'}">
+                    <input type="hidden" name="estado" value="CERRADO">
+                    <button type="submit" class="btn btn-sm btn-outline" title="Cerrar préstamo">
+                      🔒 Cerrar
+                    </button>
+                  </form>
+
+                  <form th:action="@{'/trabajador/prestamos/' + ${p.id} + '/estado'}"
+                        method="post"
+                        style="display:inline"
+                        th:if="${p.estado.name() == 'ACTIVO'}">
+                    <input type="hidden" name="estado" value="INCUMPLIDO">
+                    <button type="submit" class="btn btn-sm btn-danger" title="Marcar como incumplido" onclick="return confirm('¿Estás seguro de marcar este préstamo como incumplido?')">
+                      ⚠️ Incumplido
+                    </button>
+                  </form>
+
+                  <a th:href="@{'/trabajador/cliente/' + ${p.cliente.id}}" class="btn btn-sm btn-outline" title="Ver detalles del cliente">
+                    👤 Ver Cliente
+                  </a>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="quick-actions">
+      <h3>🚀 Acciones Rápidas</h3>
+      <div class="actions-grid">
+        <a href="/trabajador/solicitudes" class="action-card">
+          <div class="action-icon">📄</div>
+          <h4>Ver Solicitudes</h4>
+          <p>Revisar nuevas solicitudes de préstamos</p>
+        </a>
+        <a href="/trabajador/clientes" class="action-card">
+          <div class="action-icon">👥</div>
+          <h4>Buscar Clientes</h4>
+          <p>Buscar información de clientes</p>
+        </a>
+        <a href="/trabajador/tickets" class="action-card">
+          <div class="action-icon">🎫</div>
+          <h4>Tickets de Soporte</h4>
+          <p>Atender consultas de clientes</p>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Animaciones para las filas de la tabla
+    document.addEventListener('DOMContentLoaded', function() {
+      const rows = document.querySelectorAll('tbody tr');
+      rows.forEach((row, index) => {
+        row.style.animationDelay = (index * 0.05) + 's';
+        row.classList.add('fade-in');
+      });
+    });
+
+    // Confirmación para acciones críticas
+    document.querySelectorAll('.btn-danger').forEach(button => {
+      button.addEventListener('click', function(e) {
+        if (!confirm('¿Estás seguro de realizar esta acción?')) {
+          e.preventDefault();
+        }
+      });
+    });
+  </script>
 </body>
 </html>

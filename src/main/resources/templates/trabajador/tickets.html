@@ -1,41 +1,304 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Tickets</title></head>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Tickets - Banco U Latina</title>
+  <link rel="stylesheet" href="/css/estilos.css"/>
+</head>
 <body>
-<h2>Tickets</h2>
-<form method="get" th:action="@{/trabajador/tickets}">
-  <select name="estado">
-    <option th:selected="${estado==null}" value="">Todos</option>
-    <option>ABIERTO</option>
-    <option>EN_PROCESO</option>
-    <option>RESUELTO</option>
-    <option>RECHAZADO</option>
-  </select>
-  <button type="submit">Filtrar</button>
-</form>
+  <header class="header">
+    <div class="container">
+      <h1>🎫 Gestión de Tickets</h1>
+      <p>Administra y resuelve tickets de soporte de clientes</p>
+    </div>
+  </header>
 
-<table>
-  <thead><tr><th>ID</th><th>Cliente</th><th>Categoría</th><th>Estado</th><th>Asignado</th><th>Acción</th></tr></thead>
-  <tbody>
-  <tr th:each="t : ${tickets}">
-    <td th:text="${t.id}"></td>
-    <td th:text="${t.cliente.nombreCompleto}"></td>
-    <td th:text="${t.categoria}"></td>
-    <td th:text="${t.estado}"></td>
-    <td th:text="${t.asignadoA != null ? t.asignadoA.nombreCompleto : '—'}"></td>
-    <td>
-      <form th:action="@{'/trabajador/tickets/' + ${t.id} + '/estado'}" method="post">
-        <select name="estado">
-          <option th:selected="${t.estado.name()=='ABIERTO'}">ABIERTO</option>
-          <option th:selected="${t.estado.name()=='EN_PROCESO'}">EN_PROCESO</option>
-          <option th:selected="${t.estado.name()=='RESUELTO'}">RESUELTO</option>
-          <option th:selected="${t.estado.name()=='RECHAZADO'}">RECHAZADO</option>
-        </select>
-        <button type="submit">Actualizar</button>
+  <nav>
+    <div class="container">
+      <a href="/trabajador/inicio">🏠 Inicio</a>
+      <a href="/trabajador/clientes">👥 Clientes</a>
+      <a href="/trabajador/prestamos">💰 Préstamos</a>
+      <a href="/trabajador/solicitudes">📄 Solicitudes</a>
+      <a href="/trabajador/tickets" class="active">🎫 Tickets</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Notificación de actualización -->
+    <div th:if="${param.actualizado}" class="alert alert-success">
+      ✅ Ticket actualizado exitosamente.
+    </div>
+
+    <!-- Estadísticas de Tickets -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Tickets</h3>
+        <p class="stat-value" th:text="${#lists.size(tickets)}">0</p>
+        <span class="stat-label">Tickets registrados</span>
+      </div>
+      <div class="stat-card open">
+        <h3>Abiertos</h3>
+        <p class="stat-value" th:text="${#lists.size(tickets.?[estado.name() == 'ABIERTO'])}">0</p>
+        <span class="stat-label">Sin asignar</span>
+      </div>
+      <div class="stat-card in-progress">
+        <h3>En Proceso</h3>
+        <p class="stat-value" th:text="${#lists.size(tickets.?[estado.name() == 'EN_PROCESO'])}">0</p>
+        <span class="stat-label">Trabajándose</span>
+      </div>
+      <div class="stat-card resolved">
+        <h3>Resueltos</h3>
+        <p class="stat-value" th:text="${#lists.size(tickets.?[estado.name() == 'RESUELTO'])}">0</p>
+        <span class="stat-label">Completados</span>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card">
+      <div class="card-header">
+        <h3>🔍 Filtros</h3>
+      </div>
+
+      <form method="get" th:action="@{/trabajador/tickets}" class="filter-form">
+        <div class="filter-group">
+          <label for="estado">📊 Estado del Ticket</label>
+          <select name="estado" id="estado">
+            <option th:selected="${estado==null}" value="">🔍 Todos los estados</option>
+            <option th:selected="${estado != null and estado.name() == 'ABIERTO'}" value="ABIERTO">🔓 Abierto</option>
+            <option th:selected="${estado != null and estado.name() == 'EN_PROCESO'}" value="EN_PROCESO">🔄 En Proceso</option>
+            <option th:selected="${estado != null and estado.name() == 'RESUELTO'}" value="RESUELTO">✅ Resuelto</option>
+            <option th:selected="${estado != null and estado.name() == 'CERRADO'}" value="CERRADO">🔒 Cerrado</option>
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
+          <a href="/trabajador/tickets" class="btn btn-outline">🔄 Limpiar</a>
+        </div>
       </form>
-    </td>
-  </tr>
-  </tbody>
-</table>
+    </div>
+
+    <!-- Lista de Tickets -->
+    <div class="card">
+      <div class="card-header">
+        <h3>📋 Lista de Tickets de Soporte</h3>
+        <span class="badge" th:text="${#lists.size(tickets)} + ' tickets'">0 tickets</span>
+      </div>
+
+      <div th:if="${#lists.isEmpty(tickets)}" class="empty-state">
+        <div class="empty-icon">🎫</div>
+        <h3>No se encontraron tickets</h3>
+        <p>No hay tickets que coincidan con los filtros seleccionados</p>
+        <a href="/trabajador/tickets" class="btn btn-secondary">Ver Todos</a>
+      </div>
+
+      <div th:if="${not #lists.isEmpty(tickets)}" class="tickets-grid">
+        <div th:each="t : ${tickets}" class="ticket-card" th:classappend="${t.estado.name().toLowerCase()}">
+          <div class="ticket-header">
+            <div class="ticket-info">
+              <h4>Ticket #<span th:text="${t.id}">001</span></h4>
+              <span class="priority-badge" th:text="${t.categoria}">Consulta General</span>
+            </div>
+            <span class="status-badge" th:text="${t.estado}" th:classappend="${t.estado.name().toLowerCase()}">ABIERTO</span>
+          </div>
+
+          <div class="ticket-client">
+            <div class="client-avatar">👤</div>
+            <div class="client-details">
+              <h5 th:text="${t.cliente.nombreCompleto}">Juan Pérez García</h5>
+              <p th:text="${t.cliente.correo}">juan.perez@email.com</p>
+              <small th:text="'Cédula: ' + ${t.cliente.cedula}">Cédula: 123456789</small>
+            </div>
+          </div>
+
+          <div class="ticket-content">
+            <div class="ticket-category">
+              <span class="category-icon" th:text="${t.categoria.contains('Préstamo') ? '💰' : (t.categoria.contains('Cuenta') ? '🏦' : (t.categoria.contains('Tarjeta') ? '💳' : (t.categoria.contains('Técnico') ? '🔧' : '💬')))}">💬</span>
+              <span class="category-text" th:text="${t.categoria}">Consulta General</span>
+            </div>
+            <div class="ticket-description">
+              <p th:text="${t.descripcion}">Descripción del problema o consulta del cliente...</p>
+            </div>
+          </div>
+
+          <div class="ticket-assignment">
+            <div th:if="${t.asignadoA != null}" class="assigned-info">
+              <span class="assigned-label">👤 Asignado a:</span>
+              <span class="assigned-name" th:text="${t.asignadoA.nombreCompleto}">María González</span>
+            </div>
+            <div th:if="${t.asignadoA == null}" class="unassigned-info">
+              <span class="unassigned-label">⏳ Sin asignar</span>
+            </div>
+          </div>
+
+          <div class="ticket-actions">
+            <form th:action="@{'/trabajador/tickets/' + ${t.id} + '/estado'}"
+                  method="post"
+                  class="ticket-form">
+              <div class="form-row">
+                <select name="estado" class="status-select" th:attr="data-current=${t.estado.name()}">
+                  <option th:selected="${t.estado.name()=='ABIERTO'}" value="ABIERTO">🔓 Abierto</option>
+                  <option th:selected="${t.estado.name()=='EN_PROCESO'}" value="EN_PROCESO">🔄 En Proceso</option>
+                  <option th:selected="${t.estado.name()=='RESUELTO'}" value="RESUELTO">✅ Resuelto</option>
+                  <option th:selected="${t.estado.name()=='CERRADO'}" value="CERRADO">🔒 Cerrado</option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-primary">
+                  💾 Actualizar
+                </button>
+              </div>
+            </form>
+
+            <div class="ticket-quick-actions">
+              <a th:href="@{'/trabajador/cliente/' + ${t.cliente.id}}" class="btn btn-sm btn-outline" title="Ver perfil del cliente">
+                👤 Ver Cliente
+              </a>
+
+              <button class="btn btn-sm btn-outline" onclick="toggleDetails(this)" title="Ver/ocultar detalles">
+                📋 Detalles
+              </button>
+            </div>
+          </div>
+
+          <!-- Detalles expandibles -->
+          <div class="ticket-details" style="display: none;">
+            <div class="details-section">
+              <h6>📝 Información Adicional</h6>
+              <div class="detail-item">
+                <strong>Fecha de creación:</strong>
+                <span th:text="${t.fechaCreacion != null ? #temporals.format(t.fechaCreacion, 'dd/MM/yyyy HH:mm') : 'No disponible'}">01/01/2024 10:30</span>
+              </div>
+              <div class="detail-item">
+                <strong>Categoría completa:</strong>
+                <span th:text="${t.categoria}">Consulta General</span>
+              </div>
+              <div class="detail-item">
+                <strong>Descripción completa:</strong>
+                <p th:text="${t.descripcion}">Descripción detallada del problema...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Indicadores de prioridad -->
+          <div class="ticket-priority">
+            <div th:if="${t.categoria.contains('Reclamo') or t.categoria.contains('Problema')}" class="priority-high">
+              🔴 Alta Prioridad
+            </div>
+            <div th:if="${t.categoria.contains('Consulta') or t.categoria.contains('Información')}" class="priority-normal">
+              🟡 Prioridad Normal
+            </div>
+            <div th:if="${t.categoria.contains('Sugerencia')}" class="priority-low">
+              🟢 Baja Prioridad
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estadísticas por categoría -->
+    <div class="category-stats">
+      <h3>📊 Tickets por Categoría</h3>
+      <div class="category-grid">
+        <div class="category-item">
+          <span class="category-icon">💬</span>
+          <span class="category-name">Consultas</span>
+          <span class="category-count" th:text="${#lists.size(tickets.?[categoria.contains('Consulta')])}">0</span>
+        </div>
+        <div class="category-item">
+          <span class="category-icon">💰</span>
+          <span class="category-name">Préstamos</span>
+          <span class="category-count" th:text="${#lists.size(tickets.?[categoria.contains('Préstamo')])}">0</span>
+        </div>
+        <div class="category-item">
+          <span class="category-icon">🔧</span>
+          <span class="category-name">Técnicos</span>
+          <span class="category-count" th:text="${#lists.size(tickets.?[categoria.contains('Técnico')])}">0</span>
+        </div>
+        <div class="category-item">
+          <span class="category-icon">⚠️</span>
+          <span class="category-name">Reclamos</span>
+          <span class="category-count" th:text="${#lists.size(tickets.?[categoria.contains('Reclamo')])}">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="quick-actions">
+      <h3>🚀 Acciones Rápidas</h3>
+      <div class="actions-grid">
+        <a href="/trabajador/solicitudes" class="action-card">
+          <div class="action-icon">📄</div>
+          <h4>Ver Solicitudes</h4>
+          <p>Revisar solicitudes pendientes</p>
+        </a>
+        <a href="/trabajador/clientes" class="action-card">
+          <div class="action-icon">👥</div>
+          <h4>Buscar Clientes</h4>
+          <p>Consultar información de clientes</p>
+        </a>
+        <a href="/trabajador/prestamos" class="action-card">
+          <div class="action-icon">💰</div>
+          <h4>Ver Préstamos</h4>
+          <p>Gestionar préstamos activos</p>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Función para expandir/contraer detalles
+    function toggleDetails(button) {
+      const card = button.closest('.ticket-card');
+      const details = card.querySelector('.ticket-details');
+      const isVisible = details.style.display !== 'none';
+
+      details.style.display = isVisible ? 'none' : 'block';
+      button.textContent = isVisible ? '📋 Detalles' : '📋 Ocultar';
+
+      if (!isVisible) {
+        details.classList.add('fade-in');
+      }
+    }
+
+    // Animaciones para las tarjetas
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.ticket-card');
+      cards.forEach((card, index) => {
+        card.style.animationDelay = (index * 0.1) + 's';
+        card.classList.add('fade-in');
+      });
+    });
+
+    // Highlight de cambios en el estado
+    document.querySelectorAll('.status-select').forEach(select => {
+      select.addEventListener('change', function() {
+        const current = this.getAttribute('data-current');
+        if (this.value !== current) {
+          this.style.borderColor = '#3498db';
+          this.style.backgroundColor = '#e8f4fd';
+        }
+      });
+    });
+
+    // Confirmación para resolver tickets
+    document.querySelectorAll('.ticket-form').forEach(form => {
+      form.addEventListener('submit', function(e) {
+        const select = this.querySelector('select');
+        const newStatus = select.value;
+        const ticketId = this.action.match(/tickets\/(\d+)\//)[1];
+
+        if (newStatus === 'RESUELTO') {
+          if (!confirm(`¿Confirmas que el ticket #${ticketId} ha sido resuelto?`)) {
+            e.preventDefault();
+          }
+        }
+      });
+    });
+
+    // Auto-refresh cada 5 minutos para tickets nuevos
+    setTimeout(function() {
+      location.reload();
+    }, 300000);
+  </script>
 </body>
 </html>

@@ -1,25 +1,214 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Mis Tickets</title></head>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soporte Técnico - Banco U Latina</title>
+  <link rel="stylesheet" href="/css/estilos.css"/>
+</head>
 <body>
-<h2>Crear ticket</h2>
-<form method="post" th:action="@{/cliente/tickets}">
-  <input name="categoria" placeholder="Categoría" required>
-  <br><textarea name="descripcion" placeholder="Describe el problema" required></textarea>
-  <br><button type="submit">Enviar</button>
-</form>
+  <header class="header">
+    <div class="container">
+      <h1>🎫 Soporte Técnico</h1>
+      <p>Obtén ayuda rápida y personalizada para tus consultas</p>
+    </div>
+  </header>
 
-<h2>Mis tickets</h2>
-<table>
-  <thead><tr><th>ID</th><th>Categoría</th><th>Estado</th><th>Asignado a</th></tr></thead>
-  <tbody>
-  <tr th:each="t : ${tickets}">
-    <td th:text="${t.id}"></td>
-    <td th:text="${t.categoria}"></td>
-    <td th:text="${t.estado}"></td>
-    <td th:text="${t.asignadoA != null ? t.asignadoA.nombreCompleto : '—'}"></td>
-  </tr>
-  </tbody>
-</table>
+  <nav>
+    <div class="container">
+      <a href="/cliente/inicio">🏠 Inicio</a>
+      <a href="/cliente/billetera">💳 Mi Billetera</a>
+      <a href="/cliente/prestamos">💰 Préstamos</a>
+      <a href="/cliente/calculadora-prestamo">🧮 Calculadora</a>
+      <a href="/cliente/solicitudes">📄 Solicitudes</a>
+      <a href="/cliente/tickets" class="active">🎫 Soporte</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Notificación de éxito -->
+    <div th:if="${param.creado}" class="alert alert-success">
+      ✅ Ticket creado exitosamente. Te contactaremos pronto.
+    </div>
+
+    <div class="card-grid" style="grid-template-columns: 1fr 2fr; gap: 2rem;">
+      <!-- Formulario de Nuevo Ticket -->
+      <div class="card">
+        <div class="card-header">
+          <h3>💬 Nuevo Ticket</h3>
+          <p>Describe tu consulta o problema</p>
+        </div>
+
+        <form method="post" th:action="@{/cliente/tickets}" class="form-modern" id="ticketForm">
+          <div class="form-group">
+            <label for="categoria">🏷️ Categoría</label>
+            <select name="categoria" id="categoria" required>
+              <option value="">Selecciona una categoría...</option>
+              <option value="Consulta General">💬 Consulta General</option>
+              <option value="Problema con Préstamo">💰 Problema con Préstamo</option>
+              <option value="Problema con Cuenta">🏦 Problema con Cuenta</option>
+              <option value="Problema con Tarjeta">💳 Problema con Tarjeta</option>
+              <option value="Problema Técnico">🔧 Problema Técnico</option>
+              <option value="Solicitud de Información">📋 Solicitud de Información</option>
+              <option value="Reclamo">⚠️ Reclamo</option>
+              <option value="Sugerencia">💡 Sugerencia</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="descripcion">📝 Descripción del Problema</label>
+            <textarea name="descripcion"
+                      id="descripcion"
+                      placeholder="Describe detalladamente tu consulta o problema. Incluye toda la información relevante para ayudarte mejor."
+                      rows="6"
+                      required></textarea>
+            <small>Sé específico para recibir una respuesta más rápida y precisa</small>
+          </div>
+
+          <div class="form-group">
+            <button type="submit" class="btn btn-primary btn-full">
+              📤 Enviar Ticket
+            </button>
+          </div>
+        </form>
+
+        <!-- Consejos útiles -->
+        <div class="tips-section">
+          <h4>💡 Consejos para un mejor soporte</h4>
+          <ul class="tips-list">
+            <li>Sé específico en tu descripción</li>
+            <li>Incluye números de referencia si los tienes</li>
+            <li>Menciona pasos que ya intentaste</li>
+            <li>Indica la urgencia de tu consulta</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Lista de Tickets -->
+      <div class="card">
+        <div class="card-header">
+          <h3>📋 Mis Tickets de Soporte</h3>
+          <span class="badge" th:text="${#lists.size(tickets)}">0</span>
+        </div>
+
+        <div th:if="${#lists.isEmpty(tickets)}" class="empty-state">
+          <div class="empty-icon">🎫</div>
+          <h3>No tienes tickets de soporte</h3>
+          <p>¿Necesitas ayuda? Crea tu primer ticket usando el formulario de la izquierda</p>
+        </div>
+
+        <div th:if="${not #lists.isEmpty(tickets)}" class="tickets-list">
+          <div th:each="t : ${tickets}" class="ticket-item" th:classappend="${t.estado.name().toLowerCase()}">
+            <div class="ticket-header">
+              <div class="ticket-id">
+                <span class="ticket-number">#<span th:text="${t.id}">001</span></span>
+                <span class="ticket-category" th:text="${t.categoria}">Consulta General</span>
+              </div>
+              <span class="status-badge" th:text="${t.estado}" th:classappend="${t.estado.name().toLowerCase()}">ABIERTO</span>
+            </div>
+
+            <div class="ticket-content">
+              <p class="ticket-description" th:text="${t.descripcion}">Descripción del ticket...</p>
+            </div>
+
+            <div class="ticket-footer">
+              <div class="ticket-assigned" th:if="${t.asignadoA != null}">
+                <span class="assigned-label">👤 Asignado a:</span>
+                <span class="assigned-name" th:text="${t.asignadoA.nombreCompleto}">Juan Pérez</span>
+              </div>
+              <div class="ticket-assigned" th:if="${t.asignadoA == null}">
+                <span class="assigned-label">⏳ En espera de asignación</span>
+              </div>
+
+              <div class="ticket-status-message">
+                <div th:switch="${t.estado.name()}">
+                  <div th:case="'ABIERTO'" class="status-message open">
+                    🔓 Tu ticket está abierto y será atendido pronto
+                  </div>
+                  <div th:case="'EN_PROCESO'" class="status-message in-progress">
+                    🔄 Tu ticket está siendo procesado por nuestro equipo
+                  </div>
+                  <div th:case="'RESUELTO'" class="status-message resolved">
+                    ✅ Tu ticket ha sido resuelto
+                  </div>
+                  <div th:case="'CERRADO'" class="status-message closed">
+                    🔒 Ticket cerrado
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información de Contacto y FAQ -->
+    <div class="support-info">
+      <div class="card-grid" style="grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div class="card">
+          <h3>📞 Contacto Directo</h3>
+          <div class="contact-info">
+            <div class="contact-item">
+              <strong>📞 Teléfono:</strong>
+              <span>2200-1234</span>
+            </div>
+            <div class="contact-item">
+              <strong>📧 Email:</strong>
+              <span>soporte@bancoulatina.cr</span>
+            </div>
+            <div class="contact-item">
+              <strong>⏰ Horario:</strong>
+              <span>Lunes a Viernes: 8:00 AM - 6:00 PM</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>❓ Preguntas Frecuentes</h3>
+          <div class="faq-items">
+            <div class="faq-item">
+              <strong>¿Cuánto tardan en responder?</strong>
+              <p>Respondemos en un plazo máximo de 24 horas</p>
+            </div>
+            <div class="faq-item">
+              <strong>¿Puedo adjuntar archivos?</strong>
+              <p>Por seguridad, envía documentos por email</p>
+            </div>
+            <div class="faq-item">
+              <strong>¿Cómo sé si respondieron?</strong>
+              <p>Te notificaremos por email cuando actualicemos tu ticket</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Contador de caracteres para el textarea
+    document.getElementById('descripcion').addEventListener('input', function() {
+      const maxLength = 1000;
+      const currentLength = this.value.length;
+
+      if (!document.getElementById('charCounter')) {
+        const counter = document.createElement('small');
+        counter.id = 'charCounter';
+        this.parentNode.appendChild(counter);
+      }
+
+      const counter = document.getElementById('charCounter');
+      counter.textContent = `${currentLength}/${maxLength} caracteres`;
+      counter.style.color = currentLength > maxLength * 0.9 ? '#e74c3c' : '#666';
+    });
+
+    // Animaciones para los tickets
+    document.addEventListener('DOMContentLoaded', function() {
+      const tickets = document.querySelectorAll('.ticket-item');
+      tickets.forEach((ticket, index) => {
+        ticket.style.animationDelay = (index * 0.1) + 's';
+        ticket.classList.add('fade-in');
+      });
+    });
+  </script>
 </body>
 </html>

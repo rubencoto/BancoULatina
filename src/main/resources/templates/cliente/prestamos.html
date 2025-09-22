@@ -1,28 +1,146 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Mis Préstamos</title></head>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Préstamos - Banco U Latina</title>
+  <link rel="stylesheet" href="/css/estilos.css"/>
+</head>
 <body>
-<h2>Mis Préstamos</h2>
-<table>
-  <thead>
-    <tr>
-      <th>ID</th><th>Monto</th><th>Tasa anual</th><th>Plazo (meses)</th>
-      <th>Inicio</th><th>Fin</th><th>Saldo</th><th>Estado</th>
-    </tr>
-  </thead>
-  <tbody>
-  <tr th:each="p : ${prestamos}">
-    <td th:text="${p.id}"></td>
-    <td th:text="${p.montoPrincipal}"></td>
-    <td th:text="${#numbers.formatDecimal(p.tasaAnual*100,1,2)} + '%'"></td>
-    <td th:text="${p.plazoMeses}"></td>
-    <td th:text="${p.fechaInicio}">-</td>
-    <td th:text="${p.fechaFin}">-</td>
-    <td th:text="${p.saldoPendiente}"></td>
-    <td th:text="${p.estado}"></td>
-  </tr>
-  </tbody>
-</table>
+  <header class="header">
+    <div class="container">
+      <h1>💰 Mis Préstamos</h1>
+      <p>Gestiona y monitorea tus préstamos activos</p>
+    </div>
+  </header>
+
+  <nav>
+    <div class="container">
+      <a href="/cliente/inicio">🏠 Inicio</a>
+      <a href="/cliente/billetera">💳 Mi Billetera</a>
+      <a href="/cliente/prestamos" class="active">💰 Préstamos</a>
+      <a href="/cliente/calculadora-prestamo">🧮 Calculadora</a>
+      <a href="/cliente/solicitudes">📄 Solicitudes</a>
+      <a href="/cliente/tickets">🎫 Soporte</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Resumen de Préstamos -->
+    <div class="stats-grid" th:if="${not #lists.isEmpty(prestamos)}">
+      <div class="stat-card">
+        <h3>Total Prestado</h3>
+        <p class="stat-value" th:text="${#aggregates.sum(prestamos.![montoPrincipal])} + ' CRC'">0 CRC</p>
+      </div>
+      <div class="stat-card">
+        <h3>Saldo Pendiente</h3>
+        <p class="stat-value" th:text="${#aggregates.sum(prestamos.![saldoPendiente])} + ' CRC'">0 CRC</p>
+      </div>
+      <div class="stat-card">
+        <h3>Préstamos Activos</h3>
+        <p class="stat-value" th:text="${#lists.size(prestamos.?[estado.name() == 'ACTIVO'])}">0</p>
+      </div>
+    </div>
+
+    <!-- Lista de Préstamos -->
+    <div class="card">
+      <div class="card-header">
+        <h3>📋 Historial de Préstamos</h3>
+        <a href="/cliente/solicitudes" class="btn btn-primary">+ Solicitar Nuevo Préstamo</a>
+      </div>
+
+      <div th:if="${#lists.isEmpty(prestamos)}" class="empty-state">
+        <div class="empty-icon">💰</div>
+        <h3>No tienes préstamos registrados</h3>
+        <p>¡Solicita tu primer préstamo y haz realidad tus proyectos!</p>
+        <a href="/cliente/calculadora-prestamo" class="btn btn-primary">🧮 Calcular Préstamo</a>
+        <a href="/cliente/solicitudes" class="btn btn-secondary">📄 Solicitar Préstamo</a>
+      </div>
+
+      <div th:if="${not #lists.isEmpty(prestamos)}" class="loans-grid">
+        <div th:each="p : ${prestamos}" class="loan-card" th:classappend="${p.estado.name() == 'ACTIVO'} ? 'active' : (${p.estado.name() == 'PENDIENTE_DESEMBOLSO'} ? 'pending' : 'completed')">
+          <div class="loan-header">
+            <h4>Préstamo #<span th:text="${p.id}">001</span></h4>
+            <span class="status-badge" th:text="${p.estado}" th:classappend="${p.estado.name().toLowerCase()}">ACTIVO</span>
+          </div>
+
+          <div class="loan-details">
+            <div class="detail-row">
+              <span class="label">💰 Monto Principal:</span>
+              <span class="value" th:text="${#numbers.formatDecimal(p.montoPrincipal, 0, 'COMMA', 0, 'POINT')} + ' CRC'">₡1,000,000</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">📊 Tasa Anual:</span>
+              <span class="value" th:text="${#numbers.formatDecimal(p.tasaAnual*100,1,2)} + '%'">12.00%</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">⏱️ Plazo:</span>
+              <span class="value" th:text="${p.plazoMeses} + ' meses'">24 meses</span>
+            </div>
+            <div class="detail-row" th:if="${p.fechaInicio != null}">
+              <span class="label">📅 Fecha Inicio:</span>
+              <span class="value" th:text="${#temporals.format(p.fechaInicio, 'dd/MM/yyyy')}">01/01/2024</span>
+            </div>
+            <div class="detail-row" th:if="${p.fechaFin != null}">
+              <span class="label">🏁 Fecha Fin:</span>
+              <span class="value" th:text="${#temporals.format(p.fechaFin, 'dd/MM/yyyy')}">01/01/2026</span>
+            </div>
+            <div class="detail-row highlight" th:if="${p.estado.name() == 'ACTIVO'}">
+              <span class="label">💳 Saldo Pendiente:</span>
+              <span class="value debt" th:text="${#numbers.formatDecimal(p.saldoPendiente, 0, 'COMMA', 0, 'POINT')} + ' CRC'">₡800,000</span>
+            </div>
+          </div>
+
+          <div class="loan-progress" th:if="${p.estado.name() == 'ACTIVO'}">
+            <div class="progress-label">Progreso del Pago</div>
+            <div class="progress-bar">
+              <div class="progress-fill" th:style="'width: ' + ${(p.montoPrincipal - p.saldoPendiente) / p.montoPrincipal * 100} + '%'"></div>
+            </div>
+            <div class="progress-text">
+              <span th:text="${#numbers.formatDecimal((p.montoPrincipal - p.saldoPendiente) / p.montoPrincipal * 100, 1, 1)} + '% pagado'">20% pagado</span>
+            </div>
+          </div>
+
+          <div class="loan-actions" th:if="${p.estado.name() == 'ACTIVO'}">
+            <button class="btn btn-sm btn-outline">📊 Ver Cronograma</button>
+            <button class="btn btn-sm btn-success">💳 Realizar Pago</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="quick-actions">
+      <h3>🚀 Acciones Rápidas</h3>
+      <div class="actions-grid">
+        <a href="/cliente/calculadora-prestamo" class="action-card">
+          <div class="action-icon">🧮</div>
+          <h4>Calcular Préstamo</h4>
+          <p>Simula las cuotas de tu próximo préstamo</p>
+        </a>
+        <a href="/cliente/solicitudes" class="action-card">
+          <div class="action-icon">📄</div>
+          <h4>Nueva Solicitud</h4>
+          <p>Solicita un nuevo préstamo</p>
+        </a>
+        <a href="/cliente/tickets" class="action-card">
+          <div class="action-icon">🎫</div>
+          <h4>Soporte</h4>
+          <p>¿Necesitas ayuda con tu préstamo?</p>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Animaciones y efectos visuales
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.loan-card');
+      cards.forEach((card, index) => {
+        card.style.animationDelay = (index * 0.1) + 's';
+        card.classList.add('fade-in');
+      });
+    });
+  </script>
 </body>
 </html>
-

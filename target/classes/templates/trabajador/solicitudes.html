@@ -1,30 +1,239 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Solicitudes</title></head>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Solicitudes - Banco U Latina</title>
+  <link rel="stylesheet" href="/css/estilos.css"/>
+</head>
 <body>
-<h2>Solicitudes de productos</h2>
-<table>
-  <thead><tr><th>ID</th><th>Cliente</th><th>Tipo</th><th>Monto</th><th>Plazo</th><th>Tasa</th><th>Estado</th><th>Acción</th></tr></thead>
-  <tbody>
-  <tr th:each="s : ${solicitudes}">
-    <td th:text="${s.id}"></td>
-    <td th:text="${s.cliente.nombreCompleto}"></td>
-    <td th:text="${s.tipo}"></td>
-    <td th:text="${s.monto}">-</td>
-    <td th:text="${s.plazoMeses}">-</td>
-    <td th:text="${s.tasaAnual}">-</td>
-    <td th:text="${s.estado}"></td>
-    <td>
-      <form th:action="@{'/trabajador/solicitudes/' + ${s.id} + '/estado'}" method="post" style="display:inline">
-        <input type="hidden" name="estado" value="APROBADA"><button>Aprobar</button>
-      </form>
-      <form th:action="@{'/trabajador/solicitudes/' + ${s.id} + '/estado'}" method="post" style="display:inline">
-        <input type="hidden" name="estado" value="RECHAZADA"><button>Rechazar</button>
-      </form>
-    </td>
-  </tr>
-  </tbody>
-</table>
+  <header class="header">
+    <div class="container">
+      <h1>📄 Gestión de Solicitudes</h1>
+      <p>Revisa y procesa solicitudes de productos bancarios</p>
+    </div>
+  </header>
+
+  <nav>
+    <div class="container">
+      <a href="/trabajador/inicio">🏠 Inicio</a>
+      <a href="/trabajador/clientes">👥 Clientes</a>
+      <a href="/trabajador/prestamos">💰 Préstamos</a>
+      <a href="/trabajador/solicitudes" class="active">📄 Solicitudes</a>
+      <a href="/trabajador/tickets">🎫 Tickets</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Notificación de actualización -->
+    <div th:if="${param.actualizada}" class="alert alert-success">
+      ✅ Solicitud actualizada exitosamente.
+    </div>
+
+    <!-- Estadísticas de Solicitudes -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Solicitudes</h3>
+        <p class="stat-value" th:text="${#lists.size(solicitudes)}">0</p>
+        <span class="stat-label">Solicitudes registradas</span>
+      </div>
+      <div class="stat-card pending">
+        <h3>Pendientes</h3>
+        <p class="stat-value" th:text="${#lists.size(solicitudes.?[estado.name() == 'PENDIENTE'])}">0</p>
+        <span class="stat-label">Por revisar</span>
+      </div>
+      <div class="stat-card approved">
+        <h3>Aprobadas</h3>
+        <p class="stat-value" th:text="${#lists.size(solicitudes.?[estado.name() == 'APROBADA'])}">0</p>
+        <span class="stat-label">Aceptadas</span>
+      </div>
+      <div class="stat-card rejected">
+        <h3>Rechazadas</h3>
+        <p class="stat-value" th:text="${#lists.size(solicitudes.?[estado.name() == 'RECHAZADA'])}">0</p>
+        <span class="stat-label">Denegadas</span>
+      </div>
+    </div>
+
+    <!-- Lista de Solicitudes -->
+    <div class="card">
+      <div class="card-header">
+        <h3>📋 Solicitudes de Productos Bancarios</h3>
+        <div class="header-actions">
+          <span class="badge" th:text="${#lists.size(solicitudes)} + ' solicitudes'">0 solicitudes</span>
+        </div>
+      </div>
+
+      <div th:if="${#lists.isEmpty(solicitudes)}" class="empty-state">
+        <div class="empty-icon">📄</div>
+        <h3>No hay solicitudes registradas</h3>
+        <p>Actualmente no hay solicitudes de productos bancarios para revisar</p>
+      </div>
+
+      <div th:if="${not #lists.isEmpty(solicitudes)}" class="requests-grid">
+        <div th:each="s : ${solicitudes}" class="request-card" th:classappend="${s.estado.name().toLowerCase()}">
+          <div class="request-header">
+            <div class="request-info">
+              <h4>
+                <span th:text="${s.tipo.name() == 'PRESTAMO' ? '💰' : (s.tipo.name() == 'CUENTA_BANCARIA' ? '🏦' : '💳')}">💰</span>
+                <span th:text="${s.tipo.name() == 'PRESTAMO' ? 'Préstamo' : (s.tipo.name() == 'CUENTA_BANCARIA' ? 'Cuenta Bancaria' : 'Tarjeta de Débito')}">Préstamo</span>
+                #<span th:text="${s.id}">001</span>
+              </h4>
+              <span class="status-badge" th:text="${s.estado}" th:classappend="${s.estado.name().toLowerCase()}">PENDIENTE</span>
+            </div>
+          </div>
+
+          <div class="request-client">
+            <div class="client-avatar">👤</div>
+            <div class="client-details">
+              <h5 th:text="${s.cliente.nombreCompleto}">Juan Pérez García</h5>
+              <p th:text="${s.cliente.correo}">juan.perez@email.com</p>
+              <small th:text="'Cédula: ' + ${s.cliente.cedula}">Cédula: 123456789</small>
+            </div>
+          </div>
+
+          <!-- Detalles específicos para préstamos -->
+          <div th:if="${s.tipo.name() == 'PRESTAMO'}" class="request-details">
+            <div class="detail-grid">
+              <div class="detail-item" th:if="${s.monto != null}">
+                <span class="detail-label">💰 Monto Solicitado</span>
+                <span class="detail-value" th:text="${#numbers.formatDecimal(s.monto, 0, 'COMMA', 0, 'POINT')} + ' CRC'">₡1,000,000</span>
+              </div>
+              <div class="detail-item" th:if="${s.plazoMeses != null}">
+                <span class="detail-label">⏱️ Plazo</span>
+                <span class="detail-value" th:text="${s.plazoMeses} + ' meses'">24 meses</span>
+              </div>
+              <div class="detail-item" th:if="${s.tasaAnual != null}">
+                <span class="detail-label">📊 Tasa Propuesta</span>
+                <span class="detail-value" th:text="${#numbers.formatDecimal(s.tasaAnual*100,1,2)} + '% anual'">12.00% anual</span>
+              </div>
+            </div>
+
+            <!-- Calculadora rápida -->
+            <div th:if="${s.monto != null and s.plazoMeses != null and s.tasaAnual != null}" class="loan-calculator">
+              <div class="calculator-result">
+                <span class="calculator-label">Cuota Mensual Estimada:</span>
+                <span class="calculator-value">
+                  <!-- Cálculo simple de cuota mensual -->
+                  <span th:text="${#numbers.formatDecimal((s.monto * (s.tasaAnual/12)) / (1 - T(java.lang.Math).pow(1 + s.tasaAnual/12, -s.plazoMeses)), 0, 'COMMA', 0, 'POINT')} + ' CRC'">₡50,000</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detalles para otros productos -->
+          <div th:if="${s.tipo.name() != 'PRESTAMO'}" class="request-details">
+            <div class="product-info">
+              <p>Solicitud de <span th:text="${s.tipo.name() == 'CUENTA_BANCARIA' ? 'cuenta bancaria' : 'tarjeta de débito'}">producto</span></p>
+            </div>
+          </div>
+
+          <!-- Estado y acciones -->
+          <div class="request-actions">
+            <div th:if="${s.estado.name() == 'PENDIENTE'}" class="action-buttons">
+              <form th:action="@{'/trabajador/solicitudes/' + ${s.id} + '/estado'}"
+                    method="post"
+                    style="display:inline"
+                    onsubmit="return confirm('¿Confirmas que deseas APROBAR esta solicitud?')">
+                <input type="hidden" name="estado" value="APROBADA">
+                <button type="submit" class="btn btn-success">
+                  ✅ Aprobar
+                </button>
+              </form>
+
+              <form th:action="@{'/trabajador/solicitudes/' + ${s.id} + '/estado'}"
+                    method="post"
+                    style="display:inline"
+                    onsubmit="return confirm('¿Confirmas que deseas RECHAZAR esta solicitud?')">
+                <input type="hidden" name="estado" value="RECHAZADA">
+                <button type="submit" class="btn btn-danger">
+                  ❌ Rechazar
+                </button>
+              </form>
+
+              <a th:href="@{'/trabajador/cliente/' + ${s.cliente.id}}" class="btn btn-outline">
+                👤 Ver Cliente
+              </a>
+            </div>
+
+            <div th:if="${s.estado.name() == 'APROBADA'}" class="status-message approved">
+              ✅ Solicitud aprobada -
+              <span th:if="${s.tipo.name() == 'PRESTAMO'}">Se creó un préstamo automáticamente</span>
+              <span th:if="${s.tipo.name() != 'PRESTAMO'}">Producto listo para activación</span>
+            </div>
+
+            <div th:if="${s.estado.name() == 'RECHAZADA'}" class="status-message rejected">
+              ❌ Solicitud rechazada - El cliente fue notificado
+            </div>
+          </div>
+
+          <!-- Información adicional del cliente -->
+          <div class="client-summary">
+            <a th:href="@{'/trabajador/cliente/' + ${s.cliente.id}}" class="client-link">
+              📋 Ver historial completo del cliente
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros por estado (opcional para futuras mejoras) -->
+    <div class="filters-section">
+      <h3>🔍 Filtros Rápidos</h3>
+      <div class="filter-buttons">
+        <a href="/trabajador/solicitudes" class="filter-btn active">Todas</a>
+        <a href="/trabajador/solicitudes?estado=PENDIENTE" class="filter-btn pending">Pendientes</a>
+        <a href="/trabajador/solicitudes?estado=APROBADA" class="filter-btn approved">Aprobadas</a>
+        <a href="/trabajador/solicitudes?estado=RECHAZADA" class="filter-btn rejected">Rechazadas</a>
+      </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="quick-actions">
+      <h3>🚀 Acciones Rápidas</h3>
+      <div class="actions-grid">
+        <a href="/trabajador/prestamos" class="action-card">
+          <div class="action-icon">💰</div>
+          <h4>Ver Préstamos</h4>
+          <p>Gestionar préstamos activos</p>
+        </a>
+        <a href="/trabajador/clientes" class="action-card">
+          <div class="action-icon">👥</div>
+          <h4>Buscar Clientes</h4>
+          <p>Consultar información de clientes</p>
+        </a>
+        <a href="/trabajador/tickets" class="action-card">
+          <div class="action-icon">🎫</div>
+          <h4>Tickets de Soporte</h4>
+          <p>Atender consultas pendientes</p>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Animaciones para las tarjetas
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.request-card');
+      cards.forEach((card, index) => {
+        card.style.animationDelay = (index * 0.1) + 's';
+        card.classList.add('fade-in');
+      });
+    });
+
+    // Highlight de solicitudes pendientes
+    document.querySelectorAll('.request-card.pendiente').forEach(card => {
+      card.style.borderLeft = '4px solid #f39c12';
+    });
+
+    // Confirmaciones para acciones críticas
+    document.querySelectorAll('form[onsubmit]').forEach(form => {
+      form.addEventListener('submit', function(e) {
+        const action = this.querySelector('button').textContent.trim();
+        if (!confirm(`¿Estás seguro de ${action.toLowerCase()} esta solicitud?`)) {
+          e.preventDefault();
+        }
+      });
+    });
+  </script>
 </body>
 </html>
-

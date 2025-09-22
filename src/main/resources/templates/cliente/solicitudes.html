@@ -1,37 +1,206 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Solicitudes</title></head>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solicitudes de Productos - Banco U Latina</title>
+  <link rel="stylesheet" href="/css/estilos.css"/>
+</head>
 <body>
-<h2>Nueva solicitud</h2>
-<form method="post" th:action="@{/cliente/solicitudes}">
-  <label>Tipo: </label>
-  <select name="tipo" id="tipo">
-    <option th:each="t : ${tipos}" th:value="${t}" th:text="${t}"></option>
-  </select>
+  <header class="header">
+    <div class="container">
+      <h1>📄 Solicitudes de Productos</h1>
+      <p>Solicita nuevos productos bancarios y monitorea su estado</p>
+    </div>
+  </header>
 
-  <div id="prestamoCampos">
-    <p><small>(Opcional para PRESTAMO; si lo dejas vacío se usarán valores por defecto)</small></p>
-    <label>Monto (CRC): <input type="number" step="0.01" name="monto"></label><br>
-    <label>Plazo (meses): <input type="number" name="plazoMeses"></label><br>
-    <label>Tasa anual (ej. 0.12 = 12%): <input type="number" step="0.0001" name="tasaAnual"></label><br>
+  <nav>
+    <div class="container">
+      <a href="/cliente/inicio">🏠 Inicio</a>
+      <a href="/cliente/billetera">💳 Mi Billetera</a>
+      <a href="/cliente/prestamos">💰 Préstamos</a>
+      <a href="/cliente/calculadora-prestamo">🧮 Calculadora</a>
+      <a href="/cliente/solicitudes" class="active">📄 Solicitudes</a>
+      <a href="/cliente/tickets">🎫 Soporte</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Notificación de éxito -->
+    <div th:if="${param.creada}" class="alert alert-success">
+      ✅ Solicitud creada exitosamente. Será revisada por nuestro equipo.
+    </div>
+
+    <div class="card-grid" style="grid-template-columns: 1fr 2fr; gap: 2rem;">
+      <!-- Formulario de Nueva Solicitud -->
+      <div class="card">
+        <div class="card-header">
+          <h3>➕ Nueva Solicitud</h3>
+          <p>Solicita productos bancarios</p>
+        </div>
+
+        <form method="post" th:action="@{/cliente/solicitudes}" class="form-modern" id="solicitudForm">
+          <div class="form-group">
+            <label for="tipo">🏷️ Tipo de Producto</label>
+            <select name="tipo" id="tipo" required>
+              <option value="">Selecciona un producto...</option>
+              <option th:each="t : ${tipos}" th:value="${t}" th:text="${t.name() == 'PRESTAMO' ? '💰 Préstamo' : (t.name() == 'CUENTA_BANCARIA' ? '🏦 Cuenta Bancaria' : (t.name() == 'TARJETA_DEBITO' ? '💳 Tarjeta de Débito' : t)}"></option>
+            </select>
+          </div>
+
+          <!-- Campos específicos para préstamo -->
+          <div id="prestamoCampos" class="conditional-fields" style="display: none;">
+            <div class="info-box">
+              <h4>💡 Parámetros del Préstamo</h4>
+              <p><small>Puedes personalizar estos valores o usar los predeterminados</small></p>
+            </div>
+
+            <div class="form-group">
+              <label for="monto">💰 Monto Solicitado (CRC)</label>
+              <input type="number"
+                     id="monto"
+                     name="monto"
+                     placeholder="1,000,000"
+                     step="1000"
+                     min="50000"
+                     max="50000000">
+              <small>Monto entre ₡50,000 y ₡50,000,000</small>
+            </div>
+
+            <div class="form-group">
+              <label for="plazoMeses">⏱️ Plazo en Meses</label>
+              <input type="number"
+                     id="plazoMeses"
+                     name="plazoMeses"
+                     placeholder="24"
+                     min="6"
+                     max="360">
+              <small>Entre 6 y 360 meses</small>
+            </div>
+
+            <div class="form-group">
+              <label for="tasaAnual">📊 Tasa de Interés Anual</label>
+              <input type="number"
+                     id="tasaAnual"
+                     name="tasaAnual"
+                     placeholder="0.12"
+                     step="0.0001"
+                     min="0.01"
+                     max="0.50">
+              <small>Ejemplo: 0.12 = 12% anual</small>
+            </div>
+
+            <div class="calculator-preview">
+              <a href="/cliente/calculadora-prestamo" target="_blank" class="btn btn-outline btn-sm">
+                🧮 Usar Calculadora
+              </a>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <button type="submit" class="btn btn-primary btn-full">
+              📤 Enviar Solicitud
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Lista de Solicitudes -->
+      <div class="card">
+        <div class="card-header">
+          <h3>📋 Mis Solicitudes</h3>
+          <span class="badge" th:text="${#lists.size(solicitudes)}">0</span>
+        </div>
+
+        <div th:if="${#lists.isEmpty(solicitudes)}" class="empty-state">
+          <div class="empty-icon">📄</div>
+          <h3>No tienes solicitudes registradas</h3>
+          <p>Crea tu primera solicitud usando el formulario de la izquierda</p>
+        </div>
+
+        <div th:if="${not #lists.isEmpty(solicitudes)}" class="requests-list">
+          <div th:each="s : ${solicitudes}" class="request-item" th:classappend="${s.estado.name().toLowerCase()}">
+            <div class="request-header">
+              <h4>
+                <span th:text="${s.tipo.name() == 'PRESTAMO' ? '💰' : (s.tipo.name() == 'CUENTA_BANCARIA' ? '🏦' : '💳')}">💰</span>
+                <span th:text="${s.tipo.name() == 'PRESTAMO' ? 'Préstamo' : (s.tipo.name() == 'CUENTA_BANCARIA' ? 'Cuenta Bancaria' : 'Tarjeta de Débito')}">Préstamo</span>
+                #<span th:text="${s.id}">001</span>
+              </h4>
+              <span class="status-badge" th:text="${s.estado}" th:classappend="${s.estado.name().toLowerCase()}">PENDIENTE</span>
+            </div>
+
+            <div class="request-details" th:if="${s.tipo.name() == 'PRESTAMO'}">
+              <div class="detail-item" th:if="${s.monto != null}">
+                <span class="label">💰 Monto:</span>
+                <span class="value" th:text="${#numbers.formatDecimal(s.monto, 0, 'COMMA', 0, 'POINT')} + ' CRC'">₡1,000,000</span>
+              </div>
+              <div class="detail-item" th:if="${s.plazoMeses != null}">
+                <span class="label">⏱️ Plazo:</span>
+                <span class="value" th:text="${s.plazoMeses} + ' meses'">24 meses</span>
+              </div>
+              <div class="detail-item" th:if="${s.tasaAnual != null}">
+                <span class="label">📊 Tasa:</span>
+                <span class="value" th:text="${#numbers.formatDecimal(s.tasaAnual*100,1,2)} + '%'">12.00%</span>
+              </div>
+            </div>
+
+            <div class="request-status">
+              <div th:switch="${s.estado.name()}">
+                <div th:case="'PENDIENTE'" class="status-message pending">
+                  ⏳ Tu solicitud está siendo revisada por nuestro equipo
+                </div>
+                <div th:case="'APROBADA'" class="status-message approved">
+                  ✅ ¡Felicidades! Tu solicitud ha sido aprobada
+                </div>
+                <div th:case="'RECHAZADA'" class="status-message rejected">
+                  ❌ Tu solicitud ha sido rechazada. Contacta soporte para más información
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información Adicional -->
+    <div class="info-section">
+      <h3>ℹ️ Información Importante</h3>
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>⏱️ Tiempo de Respuesta</h4>
+          <p>Las solicitudes son procesadas en un plazo de 24-48 horas hábiles</p>
+        </div>
+        <div class="info-card">
+          <h4>📋 Requisitos</h4>
+          <p>Asegúrate de tener todos tus documentos actualizados en tu perfil</p>
+        </div>
+        <div class="info-card">
+          <h4>💬 Soporte</h4>
+          <p>¿Tienes dudas? <a href="/cliente/tickets">Crea un ticket de soporte</a></p>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <button type="submit">Solicitar</button>
-</form>
+  <script>
+    document.getElementById('tipo').addEventListener('change', function() {
+      const prestamoFields = document.getElementById('prestamoCampos');
+      if (this.value === 'PRESTAMO') {
+        prestamoFields.style.display = 'block';
+        prestamoFields.classList.add('fade-in');
+      } else {
+        prestamoFields.style.display = 'none';
+      }
+    });
 
-<h2>Mis solicitudes</h2>
-<table>
-  <thead><tr><th>ID</th><th>Tipo</th><th>Monto</th><th>Plazo</th><th>Tasa</th><th>Estado</th></tr></thead>
-  <tbody>
-  <tr th:each="s : ${solicitudes}">
-    <td th:text="${s.id}"></td>
-    <td th:text="${s.tipo}"></td>
-    <td th:text="${s.monto}">-</td>
-    <td th:text="${s.plazoMeses}">-</td>
-    <td th:text="${s.tasaAnual}">-</td>
-    <td th:text="${s.estado}"></td>
-  </tr>
-  </tbody>
-</table>
+    // Animaciones para los elementos de la lista
+    document.addEventListener('DOMContentLoaded', function() {
+      const items = document.querySelectorAll('.request-item');
+      items.forEach((item, index) => {
+        item.style.animationDelay = (index * 0.1) + 's';
+        item.classList.add('fade-in');
+      });
+    });
+  </script>
 </body>
 </html>
