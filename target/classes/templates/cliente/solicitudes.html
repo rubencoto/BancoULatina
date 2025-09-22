@@ -44,7 +44,7 @@
             <label for="tipo">🏷️ Tipo de Producto</label>
             <select name="tipo" id="tipo" required>
               <option value="">Selecciona un producto...</option>
-              <option th:each="t : ${tipos}" th:value="${t}" th:text="${t.name() == 'PRESTAMO' ? '💰 Préstamo' : (t.name() == 'CUENTA_BANCARIA' ? '🏦 Cuenta Bancaria' : (t.name() == 'TARJETA_DEBITO' ? '💳 Tarjeta de Débito' : t)}"></option>
+              <option th:each="t : ${tipos}" th:value="${t}" th:text="${t.name() == 'PRESTAMO' ? '💰 Préstamo' : (t.name() == 'CUENTA_BANCARIA' ? '🏦 Cuenta Bancaria' : (t.name() == 'TARJETA_DEBITO' ? '💳 Tarjeta de Débito' : t))}"></option>
             </select>
           </div>
 

@@ -32,6 +32,7 @@ cr\ac\ulatina\banco\repositorio\AsientoContableRepositorio.class
 cr\ac\ulatina\banco\entidad\Prestamo.class
 cr\ac\ulatina\banco\AplicacionBancoULatina.class
 cr\ac\ulatina\banco\dto\RegistrarClienteDto.class
+cr\ac\ulatina\banco\configuracion\InicializadorDatos.class
 cr\ac\ulatina\banco\controlador\TicketControlador.class
 cr\ac\ulatina\banco\entidad\SolicitudProducto$SolicitudProductoBuilder.class
 cr\ac\ulatina\banco\repositorio\TarjetaDebitoRepositorio.class

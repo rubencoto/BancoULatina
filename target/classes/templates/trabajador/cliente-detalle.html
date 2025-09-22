@@ -1,35 +1,51 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Detalle de Cliente</title></head>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalle de Cliente - Banco U Latina</title>
+  <link rel="stylesheet" href="/css/estilos.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏦</text></svg>">
+</head>
 <body>
-<h2 th:text="${c.nombreCompleto}">Cliente</h2>
-<p><b>Correo:</b> <span th:text="${c.correo}"></span> |
-<b>Cédula:</b> <span th:text="${c.cedula}"></span></p>
+  <header class="header">
+    <div class="container">
+      <h1>🏦 Banco U Latina</h1>
+      <p>Detalle de Cliente</p>
+    </div>
+  </header>
 
-<h3>Cuentas</h3>
-<ul><li th:each="cu : ${cuentas}" th:text="${cu.tipo} + ' ' + ${cu.moneda} + ' - ' + ${cu.saldo}"></li></ul>
+  <div class="container">
+    <div class="card">
+      <h2 th:text="${c.nombreCompleto}">Cliente</h2>
+      <p><b>Correo:</b> <span th:text="${c.correo}"></span> |
+      <b>Cédula:</b> <span th:text="${c.cedula}"></span></p>
+    </div>
 
-<h3>Tarjetas</h3>
-<ul><li th:each="t : ${tarjetas}" th:text="${t.numeroTarjeta}"></li></ul>
+    <div class="card">
+      <h3>Cuentas</h3>
+      <ul><li th:each="cu : ${cuentas}" th:text="${cu.tipo} + ' ' + ${cu.moneda} + ' - ' + ${cu.saldo}"></li></ul>
+    </div>
 
-<h3>Solicitudes</h3>
-<ul><li th:each="s : ${solicitudes}" th:text="${s.tipo} + ' (' + ${s.estado} + ')'"></li></ul>
+    <div class="card">
+      <h3>Tarjetas</h3>
+      <ul><li th:each="t : ${tarjetas}" th:text="${t.numeroTarjeta}"></li></ul>
+    </div>
 
-<h3>Tickets</h3>
-<ul><li th:each="tk : ${tickets}" th:text="'#' + ${tk.id} + ' - ' + ${tk.categoria} + ' (' + ${tk.estado} + ')'"></li></ul>
+    <div class="card">
+      <h3>Solicitudes</h3>
+      <ul><li th:each="s : ${solicitudes}" th:text="${s.tipo} + ' (' + ${s.estado} + ')'"></li></ul>
+    </div>
 
-<h3>Préstamos</h3>
-<table>
-  <thead><tr><th>ID</th><th>Monto</th><th>Tasa</th><th>Plazo</th><th>Estado</th></tr></thead>
-  <tbody>
-  <tr th:each="p : ${prestamos}">
-    <td th:text="${p.id}"></td>
-    <td th:text="${p.montoPrincipal}"></td>
-    <td th:text="${#numbers.formatDecimal(p.tasaAnual*100,1,2)} + '%'"></td>
-    <td th:text="${p.plazoMeses}"></td>
-    <td th:text="${p.estado}"></td>
-  </tr>
-  </tbody>
-</table>
+    <div class="card">
+      <h3>Préstamos</h3>
+      <ul><li th:each="p : ${prestamos}" th:text="${p.monto} + ' (' + ${p.estado} + ')'"></li></ul>
+    </div>
+
+    <div class="card">
+      <h3>Tickets</h3>
+      <ul><li th:each="ti : ${tickets}" th:text="${ti.asunto} + ' (' + ${ti.estado} + ')'"></li></ul>
+    </div>
+  </div>
 </body>
 </html>

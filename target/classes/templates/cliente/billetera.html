@@ -1,22 +1,41 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Mi Billetera</title></head>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Billetera - Banco U Latina</title>
+  <link rel="stylesheet" href="/css/estilos.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏦</text></svg>">
+</head>
 <body>
-<h2>Mis Cuentas</h2>
-<ul>
-  <li th:each="c : ${cuentas}">
-    <span th:text="${c.tipo}"></span> -
-    <span th:text="${c.moneda}"></span> -
-    ₡/$<span th:text="${c.saldo}"></span>
-  </li>
-</ul>
+  <header class="header">
+    <div class="container">
+      <h1>🏦 Banco U Latina</h1>
+      <p>Mi Billetera</p>
+    </div>
+  </header>
 
-<h2>Mis Tarjetas Débito</h2>
-<ul>
-  <li th:each="t : ${tarjetas}">
-    <span th:text="${t.numeroTarjeta}"></span> -
-    <span th:text="${t.activa} ? 'Activa' : 'Inactiva'"></span>
-  </li>
-</ul>
+  <div class="container">
+    <div class="card">
+      <h2>Mis Cuentas</h2>
+      <ul>
+        <li th:each="c : ${cuentas}">
+          <span th:text="${c.tipo}"></span> -
+          <span th:text="${c.moneda}"></span> -
+          ₡/$<span th:text="${c.saldo}"></span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Mis Tarjetas Débito</h2>
+      <ul>
+        <li th:each="t : ${tarjetas}">
+          <span th:text="${t.numeroTarjeta}"></span> -
+          <span th:text="${t.activa} ? 'Activa' : 'Inactiva'"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
 </body>
 </html>

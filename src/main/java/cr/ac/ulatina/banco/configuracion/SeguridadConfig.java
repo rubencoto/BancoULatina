@@ -21,30 +21,23 @@ public class SeguridadConfig {
     public SecurityFilterChain filtro(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        // Recursos completamente públicos (sin redirección)
-                        .requestMatchers("/", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                        // Recursos completamente públicos
+                        .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
 
-                        // Rutas de autenticación completamente públicas
-                        .requestMatchers("/auth/iniciar-sesion",
-                                        "/auth/cliente/registrar",
-                                        "/auth/trabajador/registrar").permitAll()
+                        // ✅ Rutas públicas de autenticación y registro (GET/POST) - COMPLETAMENTE ABIERTAS
+                        .requestMatchers("/auth/**").permitAll()
 
-                        // POST para registro también público
-                        .requestMatchers("/auth/login").permitAll()
-
-                        // Console H2 para desarrollo
+                        // Consola H2 (solo desarrollo)
                         .requestMatchers("/h2-console/**").permitAll()
 
-                        // Páginas específicas para trabajadores
+                        // Rutas protegidas por rol
                         .requestMatchers("/trabajador/**").hasRole("TRABAJADOR")
-
-                        // Páginas específicas para clientes
                         .requestMatchers("/cliente/**").hasRole("CLIENTE")
 
                         // Endpoint de redirección después del login
                         .requestMatchers("/despues-login").authenticated()
 
-                        // Cualquier otra solicitud debe estar autenticada
+                        // Lo demás, autenticado
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

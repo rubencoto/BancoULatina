@@ -9,5 +9,5 @@ public interface UsuarioRepositorio extends JpaRepository<Usuario, Long>, JpaSpe
     Optional<Usuario> findByCorreo(String correo);
     List<Usuario> findByRol(Rol rol);
     Optional<Usuario> findByCedula(String cedula);
+    boolean existsByCorreoAndRol(String correo, Rol rol);
 }
-
